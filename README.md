@@ -15,7 +15,7 @@ Douban FM
 
 ``` bash
 $ wget http://peak.telecommunity.com/dist/ez_setup.py
-$ python ez_setup.py
+$ sudo python ez_setup.py
 $ sudo easy_install library/mdecode-0.0.0-py2.7-linux-x86_64.egg
 ```
 
