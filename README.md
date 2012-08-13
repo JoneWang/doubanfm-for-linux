@@ -1,5 +1,5 @@
 =====================
-Douban FM For Ubuntu
+DoubanFM For Ubuntu
 =====================
 
 # Environments
