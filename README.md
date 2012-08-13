@@ -1,4 +1,29 @@
-doubanfm-for-ubuntu
-===================
+=====================
+Douban FM
+=====================
 
-doubanfm for ubuntu
+# System environments
+--
+
+* System: ubuntu 12.04 LTS
+
+* Software: OpenJDK Java 6 Runtime
+
+
+# Install
+--
+
+``` bash
+$ wget http://peak.telecommunity.com/dist/ez_setup.py
+$ python ez_setup.py
+$ sudo easy_install library/mdecode-0.0.0-py2.7-linux-x86_64.egg
+```
+
+
+# Began to enjoy music
+--
+
+``` bash
+$ chmod +x doubanfm
+$ ./doubanfm
+```
