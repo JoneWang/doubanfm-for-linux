@@ -1,8 +1,8 @@
 =====================
-Douban FM
+Douban FM For Ubuntu
 =====================
 
-# System environments
+# Environments
 --
 
 * System: ubuntu 12.04 LTS (used notify-osd)
