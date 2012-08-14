@@ -10,7 +10,7 @@ DoubanFM For Ubuntu
 * Software: OpenJDK Java 6 Runtime
 
 
-# Install
+# Install decoder
 --
 
 ``` bash
