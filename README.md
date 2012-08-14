@@ -13,6 +13,8 @@ DoubanFM For Ubuntu
 # Install decoder
 --
 
+The decoder(mdecode-0.0.1-py2.7-linux-x86_64.egg) in the library directory.
+
 ``` bash
 $ wget http://peak.telecommunity.com/dist/ez_setup.py
 $ sudo python ez_setup.py
