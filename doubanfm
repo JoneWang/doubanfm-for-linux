@@ -1,3 +1,3 @@
-python src/doubanfm.py
+#!/bin/bash
 
-
+python src/doubanfm.py "$1" "$2"

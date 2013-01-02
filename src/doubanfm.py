@@ -7,6 +7,9 @@ import sys
 import time
 import mdecode
 import re
+import os
+
+ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 channelurl = 'http://douban.fm/j/explore/hot_channels'
 
@@ -55,6 +58,24 @@ def get_music_list(channel_id):
         return json.loads(music_list)['song']
     else:
         return []
+
+def played_music_log(music_info):
+    log_path = ''.join([ROOT_PATH, '/musics.list'])
+    text = ''
+    if not os.path.exists(log_path):
+        text += '[Play Time] Title | Album | Artist | Company\n'
+    text += '[%s] %s | %s | %s | %s\n' % (
+            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
+            music_info.get('title', ''), 
+            music_info.get('albumtitle', ''), 
+            music_info.get('artist', ''), 
+            music_info.get('company', ''))
+    f = open((log_path), 'a')
+    try:
+        f.write(text)
+    finally:
+        f.close()
+
 
 def _request_url(url, params):
     params_data = urllib.urlencode(params)
@@ -107,44 +128,52 @@ if __name__ == '__main__':
 
     mdecode.initVM(classpath=mdecode.CLASSPATH)
     initCaps()
-    get_channel_list(page_start)
 
-    while True:
-        print 'Enter ID select channel.'
-        print 'Enter "n" turn to next page or "p" turn to previous page.'
-        cmd = raw_input('Command:')
-        if cmd.isdigit():
-            channel_id = int(cmd)
-            music_list = get_music_list(channel_id)
-            if music_list == []:
-                print '[info] Not found channel.\n'
-            else:
-                break
-        else:
-            if cmd == 'n':
-                page_start += 1
-                if not get_channel_list(page_start):
-                    print '[info] List is already last page.\n'
-            elif cmd == 'p':
-                if page_start != 0:
-                    page_start -= 1
-                    get_channel_list(page_start)
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == 'c':
+            channel_id = sys.argv[i+1]
+
+    if channel_id == 0:
+        get_channel_list(page_start)
+
+        while True:
+            print 'Enter ID select channel.'
+            print 'Enter "n" turn to next page or "p" turn to previous page.'
+            cmd = raw_input('Command:')
+            if cmd.isdigit():
+                channel_id = int(cmd)
+                music_list = get_music_list(channel_id)
+                if music_list == []:
+                    print '[info] Not found channel.\n'
                 else:
-                    print '[info] List is already first page.\n'
+                    break
+            else:
+                if cmd == 'n':
+                    page_start += 1
+                    if not get_channel_list(page_start):
+                        print '[info] List is already last page.\n'
+                elif cmd == 'p':
+                    if page_start != 0:
+                        page_start -= 1
+                        get_channel_list(page_start)
+                    else:
+                        print '[info] List is already first page.\n'
 
 
 
 
-    #music_list = get_music_list()
+    music_list = get_music_list(channel_id)
     for item in music_list:
         show_dialog(item['albumtitle'], item['artist'])
         if item == music_list[-1]:
             music_list.extend(get_music_list(channel_id))
         print '\nMusic Info'
         print '==============='
-        print 'Name:', item['title']
-        print 'Album:', item['albumtitle']
-        print 'Artist', item['artist']
-        print 'Company', item['company']
+        print 'Name:', item.get('title')
+        print 'Album:', item.get('albumtitle')
+        print 'Artist', item.get('artist')
+        print 'Company', item.get('company')
         print '===============\n'
+        played_music_log(item)
         mdecode.Play.main([item['url']])
+
