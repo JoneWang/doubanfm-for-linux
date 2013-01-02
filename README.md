@@ -14,7 +14,17 @@ Douban FM
 --
 
     $ chmod +x doubanfm
+
+    # run
     $ ./doubanfm
+
+    # or ./doubanfm [cmd] [channel_id]
+    $ ./doubanfm c 1001400
+
+# Command
+--
+
+c : select channel id
 
 # Display
 --
