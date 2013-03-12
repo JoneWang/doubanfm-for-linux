@@ -154,6 +154,7 @@ if __name__ == '__main__':
     while True:
         c = getch()
         if c == 'Q':
+            set_skype_status('')
             break
         elif c == 'n':
             fm.pass_song()
