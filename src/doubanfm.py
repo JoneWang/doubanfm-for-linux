@@ -46,16 +46,16 @@ class DoubanFM(object):
         self.timeout = 3
     
     def __del__(self):
-        player.set_state(gst.STATE_NULL)
+        self.player.set_state(gst.STATE_NULL)
 
     def on_message(self, bus, message):
         """docstring for on_message"""
         t = message.type
         if t == gst.MESSAGE_EOS:
-            player.set_state(gst.STATE_NULL)
+            self.player.set_state(gst.STATE_NULL)
             self.next_song()
         elif t == gst.MESSAGE_ERROR:
-            player.set_state(gst.STATE_NULL)
+            self.player.set_state(gst.STATE_NULL)
             self.next_song()
 
     def _get_playlist(self, params={}):
@@ -88,7 +88,7 @@ class DoubanFM(object):
         current_song = self.current_playlist[self.current_cur]
         #sys.stdout.flush()
         #sys.stdout.write('%s - %s\r' % (current_song.get('artist'),current_song.get('title'), ))
-        print '%s - %s\r' % (current_song.get('artist'),current_song.get('title'), )
+        print '▶  %s - %s\r' % (current_song.get('artist'),current_song.get('title'), )
         set_skype_status('♪ 正在豆瓣FM#%s#上收听: %s - %s' % (self.douban_fm_private_channels_dict[self.current_channel] ,\
                 current_song.get('artist'), current_song.get('title')))
         # TODO print play information
