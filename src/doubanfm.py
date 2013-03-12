@@ -61,9 +61,11 @@ def get_channel_list(page_num):
     print ''.ljust(55, '-')
     return True
 
-def get_music_list(channel_id, type='n'):
-    music_list_params['channel'] = str(channel_id)
-    music_list = _request_url(fmurl, music_list_params)
+def get_music_list(channel_id, p_type='n'):
+    mp = dict(music_list_params)
+    mp['channel'] = str(channel_id)
+    mp['type'] = str(p_type)
+    music_list = _request_url(fmurl, mp)
     data = json.loads(music_list)
     if data['r'] == 0:
         return json.loads(music_list)['song']
@@ -223,7 +225,7 @@ if __name__ == '__main__':
         c = getch()
         if c == 'n':
             player.set_state(gst.STATE_NULL)
-            music_list = get_music_list(channel_id, type='s') #skip
+            music_list = get_music_list(channel_id, p_type='s') #skip
             current_pos = 0
             play_song(current_pos)
         elif c == 'p':
@@ -234,7 +236,7 @@ if __name__ == '__main__':
             player.set_state(gst.STATE_NULL)
             break
         elif c == 'r':
-            music_list.extend(get_music_list(channel_id,type='r'))
+            music_list.extend(get_music_list(channel_id,p_type='r'))
             print '❤\'ed %s' % music_list[current_pos].get('title') 
 
         #TODO red ...
