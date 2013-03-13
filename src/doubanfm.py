@@ -41,7 +41,7 @@ class DoubanFM(object):
         self.current_channel = 0
         self.current_sid = 0
         self.current_playlist = []
-        self.current_cur = 0
+        self.current_cur = -1
 
         self.timeout = 3
     
@@ -86,12 +86,17 @@ class DoubanFM(object):
             return 
         self.player.set_state(gst.STATE_PLAYING)
         current_song = self.current_playlist[self.current_cur]
+        playing_info = '▶  %s - %s %s [%s](%s)' % (current_song.get('artist'), 
+                current_song.get('title'), 
+                '♥ '  if current_song.get('like') == 1 else '',
+                current_song.get('albumtitle'),
+                'http://music.douban.com%s' % current_song.get('album'))
         #sys.stdout.flush()
-        #sys.stdout.write('%s - %s\r' % (current_song.get('artist'),current_song.get('title'), ))
-        print '▶  %s - %s\r' % (current_song.get('artist'),current_song.get('title'), )
+        #sys.stdout.write(playing_info)
+        print playing_info
         set_skype_status('♪ 正在豆瓣FM#%s#上收听: %s - %s' % (self.douban_fm_private_channels_dict[self.current_channel] ,\
                 current_song.get('artist'), current_song.get('title')))
-        # TODO print play information
+        # XXX donot print playing information on resume after pause
 
     def pause(self):
         """暂停"""
@@ -100,9 +105,11 @@ class DoubanFM(object):
     def next_song(self):
         """自动续播"""
         self.player.set_state(gst.STATE_NULL)
-        if self.current_cur >= len(self.current_playlist):
+        
+        if self.current_cur == -1 or self.current_cur >= len(self.current_playlist) - 1:
             self.current_playlist.extend(self._get_playlist())
         self.current_cur += 1
+
         current_song = self.current_playlist[self.current_cur]
         self.player.set_property('uri',current_song['url'])
         self.play()
@@ -133,7 +140,7 @@ class DoubanFM(object):
         current_song = self.current_playlist[self.current_cur]
         if current_song.get('like') != 1:
             self.current_playlist.extend(self._get_playlist(params={'type':'r','sid': current_song.get('sid')}))
-            print 'reded %s' % current_song.get('title')
+            print '<3 %s' % current_song.get('title')
 
 
     def unred_song(self):
@@ -141,7 +148,7 @@ class DoubanFM(object):
         current_song = self.current_playlist[self.current_cur]
         if current_song.get('like') != 0:
             self.current_playlist.extend(self._get_playlist(params={'type':'u','sid': current_song.get('sid')}))
-            print 'unreded %s' % current_song.get('title')
+            print '</3  %s' % current_song.get('title')
             #self.current_cur += 1
             #current_song = self.current_playlist[self.current_cur]
             #self.player.set_property('uri',current_song['url'])
@@ -149,7 +156,9 @@ class DoubanFM(object):
 
 
 if __name__ == '__main__':
-    fm = DoubanFM(debug=True)
+    fm = DoubanFM(debug=False)
+    hint = 'command: Q[uit]\tn[ext]\tr[ed]\t[u]nred\tp[ause]\tP[lay]\th[elp]'
+    print hint
     fm.play()
     while True:
         c = getch()
@@ -166,4 +175,6 @@ if __name__ == '__main__':
             fm.pause()
         elif c == 'P':
             fm.play()
+        elif c == 'h':
+            print hint
 
