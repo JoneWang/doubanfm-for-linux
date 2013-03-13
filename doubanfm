@@ -1,3 +1,5 @@
 #!/bin/bash
 
-python src/doubanfm.py "$1" "$2"
+SCRIPT=`realpath $0`
+SCRIPTPATH=`dirname $SCRIPT`
+python $SCRIPTPATH/src/doubanfm.py "$1" "$2"
