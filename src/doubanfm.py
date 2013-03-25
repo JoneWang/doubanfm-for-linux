@@ -140,7 +140,7 @@ class DoubanFM(object):
         i_cover_path = "/%s/cover.%s.jpg" % (self.tmp_dir,current_song.get('sid'))
         urllib.urlretrieve(current_song.get('picture'),i_cover_path)
 
-        playing_info = '▶  %s - %s %s [%s](%s)' % (i_artist, i_title, '♥ '  if i_islike else '',i_albumtitle, i_url)
+        playing_info = '▶  %s - %s %s [%s](%s)' % (i_artist, i_title, '❤ '  if i_islike else '',i_albumtitle, i_url)
         terminal_title = "\x1b]2;▶  %s - %s\x07" % (i_artist,i_title)
         sns_info = '♪ #%s# %s - %s %s' % (self.douban_fm_channel_name.get(self.current_channel, 'DJ兆赫') ,
                 i_artist, i_title, i_url)
@@ -192,7 +192,7 @@ class DoubanFM(object):
         current_song = self.current_song
         if int(current_song.get('like')) != 1:
             self.current_playlist.extend(self._get_playlist(params={'type':'r','sid': current_song.get('sid')}))
-            print '<3 %s' % current_song.get('title')
+            print '♥ %s' % current_song.get('title')
             self.current_song['like'] = 1
 
 
@@ -201,7 +201,7 @@ class DoubanFM(object):
         current_song = self.current_song
         if int(current_song.get('like')) != 0:
             self.current_playlist.extend(self._get_playlist(params={'type':'u','sid': current_song.get('sid')}))
-            print '</3  %s' % current_song.get('title')
+            print '♡ %s' % current_song.get('title')
             self.current_song['like'] = 0
             #self.current_cur += 1
             #current_song = self.current_playlist[self.current_cur]
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         url = argv[1]
     fm = DoubanFM(debug=False, url=url)
     hint = 'Command: Q[uit]\tn[ext]\tr[ed]\t[u]nred\tp[ause]\tP[lay]\th[elp]'
-    print hint
+    print '😻  豆瓣FM'
     fm.play()
     while True:
         c = getch()
