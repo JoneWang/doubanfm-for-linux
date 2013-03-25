@@ -9,14 +9,13 @@ import urllib
 import requests
 import urlparse
 import json
-import pynotify
 import time
 import re
 import pygst
 pygst.require('0.10')
 import gst
 from util import getch
-from share import set_skype_status
+from share import set_skype_status, notify
 import tempfile
 
 class DoubanFM(object):
@@ -70,7 +69,7 @@ class DoubanFM(object):
         self.current_cur = -1
 
         self.timeout = 3
-        pynotify.init ("icon-summary")
+        
         self.tmp_dir = tempfile.mkdtemp('.cli.douban.fm')
     
     def __del__(self):
@@ -143,12 +142,11 @@ class DoubanFM(object):
 
         playing_info = '▶  %s - %s %s [%s](%s)' % (i_artist, i_title, '♥ '  if i_islike else '',i_albumtitle, i_url)
         terminal_title = "\x1b]2;▶  %s - %s\x07" % (i_artist,i_title)
-        sns_info = '♪ 正在豆瓣FM#%s#收听: %s - %s %s' % (self.douban_fm_channel_name.get(self.current_channel, 'DJ兆赫') ,
+        sns_info = '♪ #%s# %s - %s %s' % (self.douban_fm_channel_name.get(self.current_channel, 'DJ兆赫') ,
                 i_artist, i_title, i_url)
         print playing_info
         print terminal_title
-        n = pynotify.Notification(i_artist, i_title,i_cover_path)
-        n.show()
+        notify(i_artist, i_title, i_cover_path)
         set_skype_status(sns_info)
         # XXX donot print playing information on resume after pause
 
