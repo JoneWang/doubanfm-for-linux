@@ -53,7 +53,7 @@ class DoubanFM(object):
             self.douban_fm_default_params['channel'] = start.split('g')[-1]
         if cid:
             cid = cid[0]
-            self.douban_fm_default_params['channel'] = cid
+            self.douban_fm_default_params['channel'] = int(cid)
         if context is not None:
             context = context[0]
             self.douban_fm_default_params['context'] = context
@@ -142,7 +142,7 @@ class DoubanFM(object):
 
         playing_info = '▶  %s - %s %s [%s](%s)' % (i_artist, i_title, '❤ '  if i_islike else '',i_albumtitle, i_url)
         terminal_title = "\x1b]2;▶  %s - %s\x07" % (i_artist,i_title)
-        sns_info = '♪ #%s# %s - %s %s' % (self.douban_fm_channel_name.get(self.current_channel, 'DJ兆赫') ,
+        sns_info = '♪ 豆瓣FM#%s# %s - %s %s' % (self.douban_fm_channel_name.get(self.current_channel, 'DJ兆赫') ,
                 i_artist, i_title, i_url)
         print playing_info
         print terminal_title
