@@ -180,7 +180,8 @@ class DoubanFM(object):
     def ban_song(self):
         """垃圾桶"""
         self.player.set_state(gst.STATE_NULL)
-        current_song = current_song
+        current_song = self.current_song
+        print '❌ %s' % current_song.get('title')
         self.current_playlist = self._get_playlist(params={'type':'b','sid': current_song.get('sid')})
         self.current_cur = 0
         current_song = self.current_playlist[self.current_cur]
@@ -220,7 +221,7 @@ if __name__ == '__main__':
     if len(argv) >= 2:
         url = argv[1]
     fm = DoubanFM(debug=False, url=url)
-    hint = 'Command: Q[uit]\tn[ext]\tr[ed]\t[u]nred\tp[ause]\tP[lay]\th[elp]'
+    hint = 'Command: Q[uit]\tn[ext]\tb[an]\tr[ed]\t[u]nred\tp[ause]\tP[lay]\th[elp]'
     print '😻  豆瓣FM'
     fm.play()
     while True:
@@ -230,6 +231,8 @@ if __name__ == '__main__':
             break
         elif c == 'n':
             fm.pass_song()
+        elif c == 'b':
+            fm.ban_song()
         elif c == 'r':
             fm.red_song()
         elif c == 'u':
