@@ -28,3 +28,9 @@ pip-log.txt
 
 # Cookie
 .cookie
+
+# Vim
+*.swp
+
+# virtualenv
+env
