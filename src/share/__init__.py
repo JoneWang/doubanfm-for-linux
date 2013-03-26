@@ -12,7 +12,7 @@ try:
     # Create an instance of the Skype class.
     skype = Skype4Py.Skype()
     # Connect the Skype object to the Skype client.
-    skype.Attach()
+    skype.Attach(Wait=False)
     def set_skype_status(msg):
         skype.CurrentUserProfile.MoodText = msg
 except Exception, e:

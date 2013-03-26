@@ -152,6 +152,11 @@ class DoubanFM(object):
 
     def pause(self):
         """暂停"""
+        current_song = self.current_song
+        i_title = current_song.get('title')
+        i_artist = current_song.get('artist')
+        print '❙❙ %s' % i_title
+        print "\x1b]2;❙❙ %s - %s\x07" % (i_artist,i_title)
         self.player.set_state(gst.STATE_PAUSED)
 
     def next_song(self):
