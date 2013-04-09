@@ -23,6 +23,8 @@ try:
         warnings.simplefilter("always")
         import pynotify
         pynotify.init ("icon-summary")
+        n = pynotify.Notification('Douban FM')
+        n.show()
         if len(w) == 0:
             def notify(i_artist, i_title, i_cover_path):
                 n = pynotify.Notification(i_artist, i_title, i_cover_path)
