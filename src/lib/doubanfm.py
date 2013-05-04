@@ -21,7 +21,7 @@ import BeautifulSoup
 
 class DoubanFM(object):
 
-    def __init__(self,debug=False,url=None):
+    def __init__(self,start_url=None,debug=False):
         self._debug = debug
         self.ROOT_PATH = os.path.abspath(os.path.dirname(__file__) + '/../')
         self.COOKIE_PATH = os.path.join(self.ROOT_PATH, '.cookie')
@@ -38,21 +38,26 @@ class DoubanFM(object):
         self.douban_fm_hot_channel_path = '/j/explore/hot_channels'
         self.douban_fm_playlist_path = '/j/mine/playlist'
         self.douban_fm_channel_name= {0: u'私人兆赫', -3: u'红心兆赫', -8: u'红心兆赫 (TAG 版)'}
-        self.douban_fm_default_params = {'type': 'n', 'sid': '', 'channel':0, 'pb': '192',
-                'context':'', 'from':'mainsite', 'kbps':'192', 'r':'da01a52428'}
+        self.douban_fm_default_params = {
+                'type': 'n'
+                , 'sid': ''
+                , 'channel':0
+                , 'pb': '192'
+                , 'pt': 0.0
+                , 'context':''
+                , 'from':'mainsite'
+                , 'kbps':'192'
+                , 'r':'da01a52428'
+                }
         
         self.http_session = requests.session(cookies=self.http_cookies)
-        pre_request_url = url or 'http://%s/' % self.douban_fm_host
+        pre_request_url = start_url or ('http://%s/' % self.douban_fm_host)
         res = self.http_session.get(pre_request_url)
-
-        #print '😻  豆瓣FM', 
         try:
             soup = BeautifulSoup.BeautifulSoup(res.text)
             self.username = soup.find(id='user_name').text
-            #print '@%s' % self.username
         except:
             self.username = None
-            #print '@anonymous'
 
         url_params =  urlparse.parse_qs(urlparse.urlparse(pre_request_url).query)
         start = url_params.get('start')
@@ -71,7 +76,7 @@ class DoubanFM(object):
         self.current_channel = self.douban_fm_default_params['channel']
 
         self.current_playlist = []
-        self.current_cur = -2
+        self.current_cur = -1
 
         self.timeout = 3
         
@@ -82,7 +87,7 @@ class DoubanFM(object):
     
     @property
     def current_song(self):
-        if len(self.current_playlist) > 0 and self.current_cur > -2:
+        if len(self.current_playlist) > 0:
             return self.current_playlist[self.current_cur]
         else:
             print 'Ops...playlist is empty! exit'

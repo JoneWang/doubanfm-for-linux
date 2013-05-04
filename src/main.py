@@ -17,14 +17,14 @@ index_dir = os.path.dirname(os.path.abspath(__file__))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
 
 class DoubanFMGUI(QtGui.QMainWindow):
-    def __init__(self, parent=None, start_url=None):
+    def __init__(self, start_url=None, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow() 
         self.ui.setupUi(self)
         self.setup_gui()
         self.ui.seekSlider.setIconVisible(False)
         self.ui.volumeSlider.setMuteVisible(False)
-        self.doubanfm = DoubanFM(debug=False,url=start_url)
+        self.doubanfm = DoubanFM(start_url, debug=False)
         print self.doubanfm.username
         self.connect(self.ui.pushButtonHeart, QtCore.SIGNAL('clicked()'), self.heart_song)
         self.connect(self.ui.pushButtonTrash, QtCore.SIGNAL('clicked()'), self.trash_song)
@@ -152,10 +152,9 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         self.setIcon(QtGui.QIcon(favicon))
 
         start_url = None
-        if 2 == len(sys.argv):
+        if len(sys.argv) >= 2:
             start_url = sys.argv[1]
-
-        self.doubanfm_gui = DoubanFMGUI(start_url=start_url)
+        self.doubanfm_gui = DoubanFMGUI(start_url)
 
         self.leftMenu = QtGui.QMenu(parent)
         lqa=QWidgetAction(self.leftMenu)

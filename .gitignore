@@ -34,3 +34,6 @@ pip-log.txt
 
 # virtualenv
 env
+
+# misc
+src/ui/resources/*.zip
