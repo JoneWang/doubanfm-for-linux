@@ -25,8 +25,7 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.connect(self.ui.pushButtonToggle, QtCore.SIGNAL('clicked()'), self.pause_toggle)
 
         print 'init'
-        self.doubanfm.next_song()
-        self.play_song()
+        self.next_song()
 
     def setup_gui(self):
         # Setup phonon player
@@ -65,16 +64,19 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.ui.timeLabel.setText('%02d:%02d:%02d' %(h, m, s))
 
     def catchStateChanged(self, new_state, old_state):
+        #http://harmattan-dev.nokia.com/docs/library/html/qt4/phonon.html
         if new_state == Phonon.PlayingState:
             self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/pause.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
         elif new_state == Phonon.PausedState:
             self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/play.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
-        else:
-            self.doubanfm.next_song()
-
-        if new_state == Phonon.ErrorState:
+        elif new_state == Phonon.StoppedState:
+            self.next_song()
+        elif new_state == Phonon.ErrorState:
             print('Error playing back file')
             self.quit()
+        print '~' * 40
+        print 'new_state:', new_state
+        print '~' * 40
 
     def play_song(self):
         song = self.doubanfm.current_song
@@ -120,10 +122,15 @@ class DoubanFMGUI(QtGui.QMainWindow):
             self.doubanfm.red_song()
             self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
 
-    
+    def next_song(self):
+        self.doubanfm.next_song()
+        self.play_song()
+        
+
 if __name__ == "__main__":
     print 'start up'
     app = QtGui.QApplication(sys.argv)
+    app.setApplicationName("Douban FM")
     doubanfm = DoubanFMGUI()
     doubanfm.show()
     sys.exit(app.exec_())
