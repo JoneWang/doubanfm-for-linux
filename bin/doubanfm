@@ -2,4 +2,4 @@
 
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
-python $SCRIPTPATH/src/doubanfm.py "$1" "$2"
+python $SCRIPTPATH/../src/main.py "$1" "$2"
