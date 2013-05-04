@@ -1,0 +1,29 @@
+/* XPM */
+static char *doubanfm_1[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 7 1 ",
+"  c #9F9F78783636",
+". c #DADAB9B97B7B",
+"X c #CDCDB7B78989",
+"o c #F9F9E0E0A8A8",
+"O c #FFFFF9F9EEEE",
+"+ c gray100",
+"@ c None",
+/* pixels */
+"@              @",
+" .oooooooooooo. ",
+" oooooooooooooo ",
+" ooXXXXXXXXXXoo ",
+" ooXXXXXXXXXXoo ",
+" ooXXXXXXXXXXoo ",
+" ooXXXXXXXXXXoo ",
+" ooXXXXXXXXXXoo ",
+" oooooooooooooo ",
+" oooooooooooooo ",
+" oooooO+OoO+Ooo ",
+" ooooo+ +o+ +oo ",
+" oooooO+OoO+Ooo ",
+" oooooooooooooo ",
+" .oooooooooooo. ",
+"@              @"
+};

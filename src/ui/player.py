@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/player.ui'
 #
-# Created: Sat May  4 16:10:11 2013
+# Created: Sat May  4 19:16:19 2013
 #      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -196,6 +196,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.widget)
         self.debug = QtGui.QTextBrowser(self.centralwidget)
         self.debug.setGeometry(QtCore.QRect(60, 240, 261, 121))
+        self.debug.setStyleSheet(_fromUtf8("border-color: rgb(255, 0, 4);\n"
+"border-size: 2px;"))
         self.debug.setObjectName(_fromUtf8("debug"))
         MainWindow.setCentralWidget(self.centralwidget)
 

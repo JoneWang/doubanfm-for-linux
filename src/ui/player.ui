@@ -430,6 +430,10 @@ font: 16px/1.2 &quot;Helvetica Neue&quot;,Helvetica,Arial,sans-serif</string>
       <height>121</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(255, 0, 4);
+border-size: 2px;</string>
+    </property>
    </widget>
   </widget>
  </widget>
