@@ -36,3 +36,10 @@ class _GetchWindows:
 
 
 getch = _Getch()
+
+def ms_to_hms(time_ms):
+    s = int(round(time_ms / 1000))
+    m, s = divmod(s, 60)
+    h, m = divmod(m, 60)
+    return h, m, s
+

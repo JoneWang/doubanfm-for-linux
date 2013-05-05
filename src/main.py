@@ -13,15 +13,20 @@ from PyQt4.QtCore import QSize
 from PyQt4.phonon import Phonon
 from ui.player import Ui_MainWindow, _fromUtf8
 from lib.doubanfm import DoubanFM
+from util import ms_to_hms
+
 index_dir = os.path.dirname(os.path.abspath(__file__))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
+
+class GUIState:
+    (Playing, Paused, Heart, Hearted) = range(4)
 
 class DoubanFMGUI(QtGui.QMainWindow):
     def __init__(self, start_url=None, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow() 
         self.ui.setupUi(self)
-        self.setup_gui()
+        self.setup_player_ui()
         self.ui.seekSlider.setIconVisible(False)
         self.ui.volumeSlider.setMuteVisible(False)
         self.doubanfm = DoubanFM(start_url, debug=False)
@@ -31,10 +36,9 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.connect(self.ui.pushButtonSkip, QtCore.SIGNAL('clicked()'), self.skip_song)
         self.connect(self.ui.pushButtonToggle, QtCore.SIGNAL('clicked()'), self.play_toggle)
 
-        print 'init'
         self.next_song()
 
-    def setup_gui(self):
+    def setup_player_ui(self):
         # Setup phonon player
         self.mediaObject = Phonon.MediaObject(self)
         self.mediaObject.setTickInterval(100)
@@ -53,41 +57,34 @@ class DoubanFMGUI(QtGui.QMainWindow):
         # Setup the volume slider
         self.ui.volumeSlider.setAudioOutput(self.audioOutput)
 
-        # Dont show the GUI if called that way AKA cli mode
-        #if not self.disableGui:
-
-    def msToHms(self, timeMs):
-        """Convert timeMS in milliseconds to h m s format"""
-        s = timeMs / 1000
-        m, s = divmod(s, 60)
-        h, m = divmod(m, 60)
-        return h, m, s
-
+    def set_ui_state(self, state):
+        #TODO: refactor
+        if state == GUIState.Playing:
+            self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/pause.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
+        elif state == GUIState.Paused:
+            self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/play.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
+        elif state == GUIState.Heart:
+            self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/heart.png);\nborder: none;\noutline: none;')
+        elif state == GUIState.Hearted:
+            self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
 
     def tick(self, time):
-        """Catch the signal from the media object and update the time"""
-        # time is received as time in milliseconds, convert to h m s
-        h, m, s = self.msToHms(time)
+        h, m, s = ms_to_hms(time)
         self.ui.timeLabel.setText('%02d:%02d:%02d' %(h, m, s))
 
     def catchStateChanged(self, new_state, old_state):
         #http://harmattan-dev.nokia.com/docs/library/html/qt4/phonon.html
         if new_state == Phonon.PlayingState:
-            self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/pause.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
+            self.set_ui_state(GUIState.Playing)
         elif new_state == Phonon.PausedState:
-            self.ui.pushButtonToggle.setStyleSheet(_fromUtf8("background: url(:/player/play.png) no-repeat center;\nborder: none;\n outline: none;\n background-color: '#9dd6c5';"))
+            self.set_ui_state(GUIState.Paused)
         elif new_state == Phonon.StoppedState:
-            print 's' * 40
-            print 's' * 40
-            print 's' * 40
             print 'stopped state!!!!!!!!! old_state', old_state
             self.next_song()
         elif new_state == Phonon.ErrorState:
             print('Error playing back file')
             #self.quit()
-        print '~' * 40
         print 'new_state:', new_state
-        print '~' * 40
 
     def play_song(self):
         song = self.doubanfm.current_song
@@ -97,15 +94,15 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.ui.labelTitle.setToolTip(song.get('title'))
         self.ui.labelArtist.setText(song.get('artist'))
         if int(song.get('like')) != 0:
-            s = 'hearted'
+            self.set_ui_state(GUIState.Hearted)
         else:
-            s = 'heart'
-        self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/%s.png);\nborder: none;\noutline: none;' % s)
+            self.set_ui_state(GUIState.Heart)
+
         self.ui.debug.setText(str(song))
         self.mediaObject.setCurrentSource(Phonon.MediaSource(url))
         self.mediaObject.play()
         urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'),'/tmp/cover.jpg')
-        cover = QIcon('/tmp/cover.jpg')
+        cover = QIcon('/tmp/cover.jpg')# TODO refactor
         self.ui.pushButtonCover.setIcon(cover)
         self.ui.pushButtonCover.setIconSize(QSize(200,200))
 
@@ -119,23 +116,20 @@ class DoubanFMGUI(QtGui.QMainWindow):
 
     def heart_song(self):
         song = self.doubanfm.current_song
-        old_state = song.get('like')
-        if old_state != 0:
+        if int(song.get('like')) != 0:
+            self.set_ui_state(GUIState.Heart)
             self.doubanfm.unheart_song()
-            self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/heart.png);\nborder: none;\noutline: none;')
         else:
+            self.set_ui_state(GUIState.Hearted)
             self.doubanfm.heart_song()
-            self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
     
     def trash_song(self):
         self.doubanfm.trash_song()
         self.mediaObject.stop()
-        #self.play_song()
 
     def skip_song(self):
         song = self.doubanfm.skip_song()
         self.mediaObject.stop()
-        #self.play_song()
 
     def next_song(self):
         self.doubanfm.next_song()
