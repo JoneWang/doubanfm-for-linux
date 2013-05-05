@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/player.ui'
 #
-# Created: Sat May  4 19:16:19 2013
+# Created: Sun May  5 11:15:28 2013
 #      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -117,9 +117,6 @@ class Ui_MainWindow(object):
         self.pushButtonToggle.setText(_fromUtf8(""))
         self.pushButtonToggle.setAutoDefault(True)
         self.pushButtonToggle.setObjectName(_fromUtf8("pushButtonToggle"))
-        self.timeLabel = QtGui.QLabel(self.widget)
-        self.timeLabel.setGeometry(QtCore.QRect(130, 110, 45, 27))
-        self.timeLabel.setObjectName(_fromUtf8("timeLabel"))
         self.seekSlider = phonon.Phonon.SeekSlider(self.widget)
         self.seekSlider.setGeometry(QtCore.QRect(10, 96, 171, 21))
         self.seekSlider.setMinimumSize(QtCore.QSize(150, 10))
@@ -134,7 +131,7 @@ class Ui_MainWindow(object):
 "     background: \'#9dd6c5\';\n"
 "     border: none;\n"
 "     width: 18px;\n"
-"     margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */\n"
+"     margin: -2px 0;\n"
 "     border-radius: 1px;\n"
 " }\n"
 "\n"
@@ -193,9 +190,12 @@ class Ui_MainWindow(object):
         self.labelTitle.setStyleSheet(_fromUtf8("color: \'#9dd6c5\';\n"
 "font: 16px/1.2 \"Helvetica Neue\",Helvetica,Arial,sans-serif"))
         self.labelTitle.setObjectName(_fromUtf8("labelTitle"))
+        self.timeLabel = QtGui.QLabel(self.widget)
+        self.timeLabel.setGeometry(QtCore.QRect(140, 110, 45, 27))
+        self.timeLabel.setObjectName(_fromUtf8("timeLabel"))
         self.horizontalLayout_2.addWidget(self.widget)
         self.debug = QtGui.QTextBrowser(self.centralwidget)
-        self.debug.setGeometry(QtCore.QRect(60, 240, 261, 121))
+        self.debug.setGeometry(QtCore.QRect(10, 330, 261, 121))
         self.debug.setStyleSheet(_fromUtf8("border-color: rgb(255, 0, 4);\n"
 "border-size: 2px;"))
         self.debug.setObjectName(_fromUtf8("debug"))
@@ -208,10 +208,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.labelArtist.setText(_translate("MainWindow", "陶喆", None))
         self.labelAlbum.setText(_translate("MainWindow", "《黑色柳丁》2002", None))
-        self.timeLabel.setText(_translate("MainWindow", "00:00:00", None))
         self.volumeSlider.setWhatsThis(_translate("MainWindow", "ss", None))
         self.labelTitle.setToolTip(_translate("MainWindow", "sssss", None))
         self.labelTitle.setText(_translate("MainWindow", "Fuck You", None))
+        self.timeLabel.setText(_translate("MainWindow", "00:00:00", None))
 
 from PyQt4 import phonon
 import res_rc
