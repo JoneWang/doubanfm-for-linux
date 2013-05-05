@@ -21,6 +21,15 @@ favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
 class GUIState:
     (Playing, Paused, Heart, Hearted) = range(4)
 
+phonon_state_label = {
+        0: 'LoadingState'
+        ,1: 'StoppedState'
+        ,2: 'PlayingState'
+        ,3: 'BufferingState'
+        ,4: 'PausedState'
+        ,5: 'ErrorState'
+}
+
 class DoubanFMGUI(QtGui.QMainWindow):
     def __init__(self, start_url=None, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -29,13 +38,14 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.setup_player_ui()
         self.ui.seekSlider.setIconVisible(False)
         self.ui.volumeSlider.setMuteVisible(False)
+        self.total_time = None
         self.doubanfm = DoubanFM(start_url, debug=False)
         print self.doubanfm.username
         self.connect(self.ui.pushButtonHeart, QtCore.SIGNAL('clicked()'), self.heart_song)
         self.connect(self.ui.pushButtonTrash, QtCore.SIGNAL('clicked()'), self.trash_song)
         self.connect(self.ui.pushButtonSkip, QtCore.SIGNAL('clicked()'), self.skip_song)
         self.connect(self.ui.pushButtonToggle, QtCore.SIGNAL('clicked()'), self.play_toggle)
-
+        print 'init play'
         self.next_song()
 
     def setup_player_ui(self):
@@ -45,7 +55,7 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.mediaObject.tick.connect(self.tick)
         #self.mediaObject.finished.connect(self.finished)
         self.mediaObject.stateChanged.connect(self.catchStateChanged)
-        #self.mediaObject.totalTimeChanged.connect(self.totalTime)
+        self.mediaObject.totalTimeChanged.connect(self._set_total_time)
 
         # bind AudioOutput with MediaObject
         self.audioOutput = Phonon.AudioOutput(Phonon.MusicCategory, self)
@@ -69,27 +79,45 @@ class DoubanFMGUI(QtGui.QMainWindow):
             self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
 
     def tick(self, time):
-        h, m, s = ms_to_hms(time)
-        self.ui.timeLabel.setText('%02d:%02d:%02d' %(h, m, s))
+        if self.total_time is None:
+            return
+        h, m, s = ms_to_hms(self.total_time - time)
+        time_text = '%02d:%02d' % (m, s)
+        if h > 0:
+            time_text = ('%02d:' % h) + time_text
+        time_text = '- %s' % time_text
+        self.ui.timeLabel.setText(time_text)
+
+    def _set_total_time(self, time):
+        self.total_time = time
+        
 
     def catchStateChanged(self, new_state, old_state):
+        ''' 
+        possible state sequences:
+        [init]: loading -> [next]
+        [next]: stop -> paused -> playing -> stop(*)
+        [skip],[trash]: playing -> paused -> stop -> pause -> playing(*)
+        '''
+        print 'old_state: %s, new_state: %s' %(phonon_state_label.get(old_state), phonon_state_label.get(new_state))
         #http://harmattan-dev.nokia.com/docs/library/html/qt4/phonon.html
         if new_state == Phonon.PlayingState:
             self.set_ui_state(GUIState.Playing)
         elif new_state == Phonon.PausedState:
             self.set_ui_state(GUIState.Paused)
         elif new_state == Phonon.StoppedState:
-            print 'stopped state!!!!!!!!! old_state', old_state
-            self.next_song()
+            if old_state == Phonon.PlayingState:#auto next song
+                self.next_song()
         elif new_state == Phonon.ErrorState:
             print('Error playing back file')
             #self.quit()
-        print 'new_state:', new_state
 
-    def play_song(self):
+    def _play_song(self):
+        '''should be called by self.next_song() ONLY'''
         song = self.doubanfm.current_song
         url = song.get('url')
-        self.ui.labelAlbum.setText(u'<{0}> {1}'.format(song.get('albumtitle'), song.get('public_time')))
+        print 'GUI._play_song:', url
+        self.ui.labelAlbum.setText(u'<{0}> {1}'.format(song.get('albumtitle'), song.get('public_time') or ''))
         self.ui.labelTitle.setText(song.get('title'))
         self.ui.labelTitle.setToolTip(song.get('title'))
         self.ui.labelArtist.setText(song.get('artist'))
@@ -125,15 +153,15 @@ class DoubanFMGUI(QtGui.QMainWindow):
     
     def trash_song(self):
         self.doubanfm.trash_song()
-        self.mediaObject.stop()
+        self.next_song()
 
     def skip_song(self):
         song = self.doubanfm.skip_song()
-        self.mediaObject.stop()
+        self.next_song()
 
     def next_song(self):
         self.doubanfm.next_song()
-        self.play_song()
+        self._play_song()
 
     def __del__(self):
         self.mediaObject.stop()
