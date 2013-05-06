@@ -11,13 +11,12 @@ import urlparse
 import json
 import time
 import re
-from util import getch
 #from share import set_skype_status, notify
 from plugin import test_filter
 import tempfile
 import BeautifulSoup
 
-
+from common import logger as l
 
 class DoubanFM(object):
 
@@ -90,8 +89,9 @@ class DoubanFM(object):
         if len(self.current_playlist) > 0:
             return self.current_playlist[self.current_cur]
         else:
-            print 'Ops...playlist is empty! exit'
+            l.error('Ops...playlist is empty! exit')
             sys.exit()
+
 
     def _get_playlist(self, params={}):
         params_tmp = self.douban_fm_default_params
@@ -108,7 +108,7 @@ class DoubanFM(object):
         if int(res_json.get('r')) == 0:
             return res_json['song']
         elif int(res_json.get('r')) == 1:
-            #print 'error: %s' % res_json['err']
+            l.warning('cannot parse response json:\n {err}'.format(**res_json))
             return []
        
     def next_song(self):
