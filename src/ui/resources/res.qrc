@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/player">
+    <file>share_deactive.png</file>
+    <file>share.png</file>
     <file>skip.png</file>
     <file>pause.png</file>
     <file>play.png</file>
@@ -10,5 +12,4 @@
     <file>volume2.png</file>
     <file>volume3.png</file>
   </qresource>
-  <qresource prefix="newPrefix"/>
 </RCC>
