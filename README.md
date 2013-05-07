@@ -1,5 +1,7 @@
 # Douban FM
 
+*GUI版本正在努力开发中，见[gui branch](https://github.com/mckelvin/doubanfm-cli-for-linux/tree/gui)。*
+
 一个会自动同步播放信息到Skype签名的终端豆瓣FM客户端 :musical_note:
 
 ## 系统环境
