@@ -7,16 +7,19 @@
 import os
 import sys
 import urllib
+import webbrowser
+
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QPixmap, QIcon, QLabel, QWidgetAction
 from PyQt4.QtCore import QSize
 from PyQt4.phonon import Phonon
+
 from ui.player import Ui_MainWindow, _fromUtf8
-from lib.doubanfm import DoubanFM
-from util import ms_to_hms
+from common import index_dir, favicon, ms_to_hms, logger as l
+from common.doubanfm import DoubanFM
 
 index_dir = os.path.dirname(os.path.abspath(__file__))
-favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
+favicon = os.path.join(index_dir, favicon)
 
 class GUIState:
     (Playing, Paused, Heart, Hearted) = range(4)
@@ -40,12 +43,13 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.ui.volumeSlider.setMuteVisible(False)
         self.total_time = None
         self.doubanfm = DoubanFM(start_url, debug=False)
-        print self.doubanfm.username
         self.connect(self.ui.pushButtonHeart, QtCore.SIGNAL('clicked()'), self.heart_song)
         self.connect(self.ui.pushButtonTrash, QtCore.SIGNAL('clicked()'), self.trash_song)
         self.connect(self.ui.pushButtonSkip, QtCore.SIGNAL('clicked()'), self.skip_song)
         self.connect(self.ui.pushButtonToggle, QtCore.SIGNAL('clicked()'), self.play_toggle)
-        print 'init play'
+        self.connect(self.ui.pushButtonCover, QtCore.SIGNAL('clicked()'), self.on_click_cover)
+        self.connect(self.ui.pushButtonShare, QtCore.SIGNAL('clicked()'), self.on_click_share)
+        l.info('DoubanFM init')
         self.next_song()
 
     def setup_player_ui(self):
@@ -78,14 +82,29 @@ class DoubanFMGUI(QtGui.QMainWindow):
         elif state == GUIState.Hearted:
             self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
 
+    def on_click_cover(self):
+        song = self.doubanfm.current_song
+        subject_url = u'http://music.douban.com{album}'.format(**song)
+        webbrowser.open_new_tab(subject_url)
+
+        
+    def on_click_share(self):
+        song = self.doubanfm.current_song
+        song_url = u'http://douban.fm/?start={sid}g{ssid}g{channel}&cid={channel}'.format(channel=self.doubanfm.current_channel, **song)
+        webbrowser.open_new_tab(song_url)
+        
     def tick(self, time):
         if self.total_time is None:
             return
-        h, m, s = ms_to_hms(self.total_time - time)
-        time_text = '%02d:%02d' % (m, s)
-        if h > 0:
-            time_text = ('%02d:' % h) + time_text
-        time_text = '- %s' % time_text
+        time_remaining = self.total_time - time
+        h, m, s = ms_to_hms(time_remaining)
+        if h == 0:
+            time_text = '%d:%02d' % (m, s)
+        else:
+            time_text = '%d:%02d:%02d' % (h, m, s)
+
+        if time_remaining > 0:
+            time_text = '-%s' % time_text
         self.ui.timeLabel.setText(time_text)
 
     def _set_total_time(self, time):
@@ -99,7 +118,7 @@ class DoubanFMGUI(QtGui.QMainWindow):
         [next]: stop -> paused -> playing -> stop(*)
         [skip],[trash]: playing -> paused -> stop -> pause -> playing(*)
         '''
-        print 'old_state: %s, new_state: %s' %(phonon_state_label.get(old_state), phonon_state_label.get(new_state))
+        l.debug(u'old_state: {0}, new_state: {1}'.format(phonon_state_label.get(old_state), phonon_state_label.get(new_state)))
         #http://harmattan-dev.nokia.com/docs/library/html/qt4/phonon.html
         if new_state == Phonon.PlayingState:
             self.set_ui_state(GUIState.Playing)
@@ -109,14 +128,13 @@ class DoubanFMGUI(QtGui.QMainWindow):
             if old_state == Phonon.PlayingState:#auto next song
                 self.next_song()
         elif new_state == Phonon.ErrorState:
-            print('Error playing back file')
-            #self.quit()
+            l.error('error while playing back')
+            self.next_song()
 
     def _play_song(self):
         '''should be called by self.next_song() ONLY'''
         song = self.doubanfm.current_song
-        url = song.get('url')
-        print 'GUI._play_song:', url
+        l.info(u'playing song: {sid} - {artist} - {title}'.format(**song))
         self.ui.labelAlbum.setText(u'<{0}> {1}'.format(song.get('albumtitle'), song.get('public_time') or ''))
         self.ui.labelTitle.setText(song.get('title'))
         self.ui.labelTitle.setToolTip(song.get('title'))
@@ -126,16 +144,18 @@ class DoubanFMGUI(QtGui.QMainWindow):
         else:
             self.set_ui_state(GUIState.Heart)
 
-        self.ui.debug.setText(str(song))
-        self.mediaObject.setCurrentSource(Phonon.MediaSource(url))
+        self.mediaObject.setCurrentSource(Phonon.MediaSource(song.get('url')))
         self.mediaObject.play()
         urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'),'/tmp/cover.jpg')
-        cover = QIcon('/tmp/cover.jpg')# TODO refactor
+        pixmap = QPixmap('/tmp/cover.jpg')
+        pixmap = pixmap.scaled(self.ui.pushButtonCover.iconSize(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+        pixmap_size = self.ui.pushButtonCover.iconSize()
+        pixmap = pixmap.copy(0,0,pixmap_size.width(), pixmap_size.height())
+        cover = QIcon(pixmap)
         self.ui.pushButtonCover.setIcon(cover)
-        self.ui.pushButtonCover.setIconSize(QSize(200,200))
-
         
     def play_toggle(self):
+        song = self.doubanfm.current_song
         ns = self.mediaObject.state()
         if ns == Phonon.PlayingState:
             self.mediaObject.pause()
@@ -145,18 +165,24 @@ class DoubanFMGUI(QtGui.QMainWindow):
     def heart_song(self):
         song = self.doubanfm.current_song
         if int(song.get('like')) != 0:
+            l.info(u'unhearted song: {sid} - {artist} - {title}'.format(**song))
             self.set_ui_state(GUIState.Heart)
             self.doubanfm.unheart_song()
         else:
+            l.info(u'hearted song: {sid} - {artist} - {title}'.format(**song))
             self.set_ui_state(GUIState.Hearted)
             self.doubanfm.heart_song()
     
     def trash_song(self):
+        song = self.doubanfm.current_song
+        l.info(u'trash song: {sid} - {artist} - {title}'.format(**song))
         self.doubanfm.trash_song()
         self.next_song()
 
     def skip_song(self):
-        song = self.doubanfm.skip_song()
+        song = self.doubanfm.current_song
+        l.info(u'skip song: {sid} - {artist} - {title}'.format(**song))
+        self.doubanfm.skip_song()
         self.next_song()
 
     def next_song(self):
@@ -164,8 +190,8 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self._play_song()
 
     def __del__(self):
+        l.info(u'DoubanFM safely exit')
         self.mediaObject.stop()
-        
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, parent=None):
@@ -186,15 +212,14 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
 
         self.rightMenu = QtGui.QMenu(parent)
         username = self.doubanfm_gui.doubanfm.username
-        print 'username:', username
         rqa = QWidgetAction(self.rightMenu)
         about = QLabel("{0} {1}".format('Douban FM GUI', '', 'by mckelvin'))
 
         rqa.setDefaultWidget(about);
         self.rightMenu.addAction(rqa)
         self.rightMenu.addAction(u'@{0}'.format((username or u'未登录')))
-        appexit = self.rightMenu.addAction("Exit")
-        self.connect(appexit,QtCore.SIGNAL('triggered()'),self.app_exit)
+        app_exit = self.rightMenu.addAction("Exit")
+        self.connect(app_exit,QtCore.SIGNAL('triggered()'),self.app_exit)
 
                 
         self.setContextMenu(self.rightMenu)

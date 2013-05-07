@@ -1,6 +1,5 @@
 <RCC>
   <qresource prefix="/player">
-    <file>share_deactive.png</file>
     <file>share.png</file>
     <file>skip.png</file>
     <file>pause.png</file>
