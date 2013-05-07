@@ -35,7 +35,8 @@ class DoubanFM(object):
         self.douban_fm_host = 'douban.fm'
         self.douban_fm_hot_channel_path = '/j/explore/hot_channels'
         self.douban_fm_playlist_path = '/j/mine/playlist'
-        self.douban_fm_channel_name= {0: u'私人兆赫', -3: u'红心兆赫', -8: u'红心兆赫 (TAG 版)'}
+        self.douban_fm_channel_detail_path = '/j/explore/channel_detail'
+        self.douban_fm_channel_name= {0: u'私人兆赫', -3: u'红心兆赫'}
         self.douban_fm_default_params = {
                 'type': 'n'
                 , 'sid': ''
@@ -57,6 +58,10 @@ class DoubanFM(object):
             self.username = soup.find(id='user_name').text
         except:
             self.username = None
+        if len(res.history) >= 1:
+            last_visit = res.history[-1]
+            if last_visit.status_code == 302:
+                pre_request_url = last_visit.headers.get('location')
 
         url_params =  urlparse.parse_qs(urlparse.urlparse(pre_request_url).query)
         start = url_params.get('start')
@@ -72,12 +77,13 @@ class DoubanFM(object):
             context = context[0]
             self.douban_fm_default_params['context'] = context
 
-        self.current_channel = self.douban_fm_default_params['channel']
+        self.channel_id = int(self.douban_fm_default_params['channel'])
 
         self.current_playlist = []
         self.current_cur = -1
 
         self.timeout = 3
+        l.debug(u'username:{username}, channel:{channel}'.format(username=self.username, channel=self.channel_name))
         
     @property
     def current_song(self):
@@ -87,6 +93,22 @@ class DoubanFM(object):
             l.error('Ops...playlist is empty! exit')
             sys.exit()
 
+    @property
+    def channel_name(self):
+        channel_name = self.douban_fm_channel_name.get(self.channel_id)
+        if channel_name is not None:
+            return channel_name
+
+        params_data = 'channel_id=%d' % self.channel_id
+        url = '?'.join(('http://%s%s' % (self.douban_fm_host, self.douban_fm_channel_detail_path), params_data))
+        res = self.http_session.get(url)
+        res_json = json.loads(res.text)
+        if not res_json.get('status'):
+            return None
+        else:
+            channel_name = res_json.get('data').get('channel').get('name')
+            self.douban_fm_channel_name.update({self.channel_id: channel_name})
+            return channel_name
 
     def _get_playlist(self, params={}):
         params_tmp = self.douban_fm_default_params

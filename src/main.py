@@ -19,9 +19,6 @@ from ui.player import Ui_MainWindow, _fromUtf8
 from common import index_dir, tmp_dir, favicon, ms_to_hms, logger as l
 from common.doubanfm import DoubanFM
 
-index_dir = os.path.dirname(os.path.abspath(__file__))
-favicon = os.path.join(index_dir, favicon)
-
 class GUIState:
     (Playing, Paused, Heart, Hearted) = range(4)
 
@@ -155,6 +152,8 @@ class DoubanFMGUI(QtGui.QMainWindow):
         pixmap = pixmap.copy(0,0,pixmap_size.width(), pixmap_size.height())
         cover = QIcon(pixmap)
         self.ui.pushButtonCover.setIcon(cover)
+        from share import now_playing
+        now_playing(song,channel_id=self.doubanfm.channel_id,channel_name=self.doubanfm.channel_name)
         
     def play_toggle(self):
         song = self.doubanfm.current_song
