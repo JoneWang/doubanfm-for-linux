@@ -1,8 +1,10 @@
 # coding: UTF-8
 import os
 import logging
+import tempfile
 index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
+tmp_dir = tempfile.mkdtemp(prefix='doubanfm-tmp')
 
 def get_logger():
     logger = logging.getLogger("DoubanFMGUI")

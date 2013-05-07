@@ -13,7 +13,6 @@ import time
 import re
 #from share import set_skype_status, notify
 from plugin import test_filter
-import tempfile
 import BeautifulSoup
 
 from common import logger as l
@@ -80,11 +79,6 @@ class DoubanFM(object):
 
         self.timeout = 3
         
-        self.tmp_dir = tempfile.mkdtemp('.cli.douban.fm')
-    
-    def __del__(self):
-        os.rmdir(self.tmp_dir) #TODO bug here,not called
-    
     @property
     def current_song(self):
         if len(self.current_playlist) > 0:

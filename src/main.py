@@ -6,6 +6,7 @@
 #
 import os
 import sys
+import shutil
 import urllib
 import webbrowser
 
@@ -15,7 +16,7 @@ from PyQt4.QtCore import QSize
 from PyQt4.phonon import Phonon
 
 from ui.player import Ui_MainWindow, _fromUtf8
-from common import index_dir, favicon, ms_to_hms, logger as l
+from common import index_dir, tmp_dir, favicon, ms_to_hms, logger as l
 from common.doubanfm import DoubanFM
 
 index_dir = os.path.dirname(os.path.abspath(__file__))
@@ -146,8 +147,9 @@ class DoubanFMGUI(QtGui.QMainWindow):
 
         self.mediaObject.setCurrentSource(Phonon.MediaSource(song.get('url')))
         self.mediaObject.play()
-        urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'),'/tmp/cover.jpg')
-        pixmap = QPixmap('/tmp/cover.jpg')
+        local_cover_path = os.path.join(tmp_dir, 'cover-%s.jpg' % song.get('sid'))
+        urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'), local_cover_path)
+        pixmap = QPixmap(local_cover_path)
         pixmap = pixmap.scaled(self.ui.pushButtonCover.iconSize(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         pixmap_size = self.ui.pushButtonCover.iconSize()
         pixmap = pixmap.copy(0,0,pixmap_size.width(), pixmap_size.height())
@@ -230,6 +232,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
             self.leftMenu.exec_(QtGui.QCursor.pos())
 
     def app_exit(self):
+        shutil.rmtree(tmp_dir)
         del self.doubanfm_gui
         app.quit()
 
@@ -246,6 +249,7 @@ if __name__ == "__main__":
     '''
     # start as a tray bar app
     app = QtGui.QApplication(sys.argv)
+    app.setApplicationName("Douban FM")
     app.setQuitOnLastWindowClosed(False)
     w = QtGui.QWidget()
     trayIcon = SystemTrayIcon(w)
