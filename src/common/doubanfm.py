@@ -88,7 +88,16 @@ class DoubanFM(object):
     @property
     def current_song(self):
         if len(self.current_playlist) > 0:
-            return self.current_playlist[self.current_cur]
+            song = self.current_playlist[self.current_cur]
+            #TODO support more property here
+            song_url = u'http://{douban_fm_host}/?start={sid}g{ssid}g{channel}&cid={channel}'.format( \
+                    douban_fm_host = self.douban_fm_host
+                    , sid = song.get('sid')
+                    , ssid = song.get('ssid', 'None')
+                    , channel=self.channel_id
+                    , )
+            song.update({'song_url': song_url})
+            return song
         else:
             l.error('Ops...playlist is empty! exit')
             sys.exit()

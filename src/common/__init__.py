@@ -2,9 +2,7 @@
 import os
 import logging
 import tempfile
-index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
-tmp_dir = tempfile.mkdtemp(prefix='doubanfm-tmp')
+
 
 def get_logger():
     logger = logging.getLogger("DoubanFMGUI")
@@ -22,11 +20,21 @@ def get_logger():
     logger.addHandler(fh)
     return logger
 
-logger = get_logger()
-
 def ms_to_hms(time_ms):
     s = int(round(time_ms / 1000))
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
     return h, m, s
 
+index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
+tmp_dir = tempfile.mkdtemp(prefix='doubanfm-tmp')
+logger = get_logger()
+phonon_state_label = {
+        0: 'LoadingState'
+        ,1: 'StoppedState'
+        ,2: 'PlayingState'
+        ,3: 'BufferingState'
+        ,4: 'PausedState'
+        ,5: 'ErrorState'
+}
