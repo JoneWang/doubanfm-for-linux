@@ -1,17 +1,15 @@
 # coding: UTF-8
 import warnings
 
-def set_skype_status(msg):
+def set_skype_status(*args, **kwargs):
     pass
 
-def notify(*argv):
+def notify(*args, **kwargs):
     pass
 
 try:
     import Skype4Py
-    # Create an instance of the Skype class.
     skype = Skype4Py.Skype()
-    # Connect the Skype object to the Skype client.
     skype.Attach(Wait=False)
     def set_skype_status(msg):
         skype.CurrentUserProfile.MoodText = msg
@@ -31,3 +29,11 @@ try:
                 n.show()
 except:
     pass
+
+
+def now_playing(song, channel_id, channel_name):
+    t = u'♫ #NowPlaying# {artist} - {title} #{channel_name}# {song_url}'.format(\
+            channel_name = channel_name
+            , **song
+            )
+    set_skype_status(t)

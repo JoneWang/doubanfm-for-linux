@@ -34,3 +34,7 @@ pip-log.txt
 
 # virtualenv
 env
+
+# misc
+src/ui/resources/*.zip
+src/douban_fm.log
