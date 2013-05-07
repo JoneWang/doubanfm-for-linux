@@ -37,3 +37,4 @@ env
 
 # misc
 src/ui/resources/*.zip
+src/doubanfm.log

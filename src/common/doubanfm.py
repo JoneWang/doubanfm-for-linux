@@ -24,12 +24,12 @@ class DoubanFM(object):
         self._debug = debug
         self.ROOT_PATH = os.path.abspath(os.path.dirname(__file__) + '/../')
         self.COOKIE_PATH = os.path.join(self.ROOT_PATH, '.cookie')
-        self.http_cookies = {}
+        http_cookies = {}
         if os.path.exists(self.COOKIE_PATH):
             with open(self.COOKIE_PATH) as fh:
                 cookies_text = fh.read().strip()
                 try:
-                    self.http_cookies = dict(cookie.split('=',1) for cookie in cookies_text.split('; '))
+                    http_cookies = dict(cookie.split('=',1) for cookie in cookies_text.split('; '))
                 except:
                     pass
         
@@ -49,7 +49,8 @@ class DoubanFM(object):
                 , 'r':'da01a52428'
                 }
         
-        self.http_session = requests.session(cookies=self.http_cookies)
+        self.http_session = requests.session()
+        self.http_session.cookies.update(http_cookies)
         pre_request_url = start_url or ('http://%s/' % self.douban_fm_host)
         res = self.http_session.get(pre_request_url)
         try:

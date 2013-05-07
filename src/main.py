@@ -190,7 +190,7 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self._play_song()
 
     def __del__(self):
-        l.info(u'DoubanFM safely exit')
+        print 'DoubanFM safely exit'
         self.mediaObject.stop()
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
