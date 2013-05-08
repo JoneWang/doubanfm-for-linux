@@ -28,9 +28,10 @@ class DoubanFMGUI(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow() 
         self.ui.setupUi(self)
-        self.setup_player_ui()
         self.ui.seekSlider.setIconVisible(False)
         self.ui.volumeSlider.setMuteVisible(False)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setup_player_ui()
         self.total_time = None
         self.doubanfm = DoubanFM(start_url, debug=False)
         self.connect(self.ui.pushButtonHeart, QtCore.SIGNAL('clicked()'), self.heart_song)
