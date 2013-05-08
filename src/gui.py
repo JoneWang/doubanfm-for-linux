@@ -76,8 +76,12 @@ class DoubanFMGUI(QtGui.QMainWindow):
     def leaveEvent(self, e):
         # the real lose focus event, WTF
         # http://harmattan-dev.nokia.com/docs/library/html/qt4/qwidget.html#leaveEvent
-        if e.type() == QtCore.QEvent.Leave:
+        self.hide()
+
+    def keyPressEvent(self, e):
+        if event.key() == QtCore.Qt.Key_Escape:
             self.hide()
+
 
     def on_click_cover(self):
         song = self.doubanfm.current_song
