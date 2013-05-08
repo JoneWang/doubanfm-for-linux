@@ -79,7 +79,7 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.hide()
 
     def keyPressEvent(self, e):
-        if event.key() == QtCore.Qt.Key_Escape:
+        if e.key() == QtCore.Qt.Key_Escape:
             self.hide()
 
 
@@ -233,10 +233,15 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
                 y = QtGui.QCursor.pos().y()
                 h = self.main_window.minimumHeight()
                 w = self.main_window.minimumWidth()
+                alpha = 5
                 if x + w > self.screen_size[0]:
-                    x -= w
+                    x -= (w - alpha)
+                else:
+                    x += alpha
                 if y + h > self.screen_size[1]:
-                    y -= h
+                    y -= (h - alpha)
+                else:
+                    y -= alpha
                 self.main_window.setGeometry(x,y,w,h)
                 self.main_window.show()
                 self.main_window.setFocus()
