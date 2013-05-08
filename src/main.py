@@ -14,12 +14,14 @@ if __name__ == "__main__":
     '''
 
     # start as a tray bar app
-    from gui import SystemTrayIcon
+    from gui import SystemTrayApp
     from PyQt4 import QtGui
     app = QtGui.QApplication(sys.argv)
     app.setApplicationName("Douban FM")
     app.setQuitOnLastWindowClosed(False)
-    w = QtGui.QWidget()
-    trayIcon = SystemTrayIcon(w)
-    trayIcon.show()
+    w = app.desktop().width()
+    h = app.desktop().height()
+    widget = QtGui.QWidget()
+    doubanfm = SystemTrayApp(widget, w, h)
+    doubanfm.show()
     sys.exit(app.exec_())
