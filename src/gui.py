@@ -16,9 +16,9 @@ from PyQt4.QtCore import QSize
 from PyQt4.phonon import Phonon
 
 from ui.player import Ui_MainWindow, _fromUtf8
-from common import index_dir, tmp_dir, favicon, ms_to_hms, phonon_state_label, logger as l
+from common import index_dir, tmp_dir, favicon, phonon_state_label, \
+        logger as l, ms_to_hms, async
 from common.doubanfm import DoubanFM
-
 
 class GUIState:
     (Playing, Paused, Heart, Hearted) = range(4)
@@ -39,13 +39,14 @@ class DoubanFMGUI(QtGui.QMainWindow):
         self.connect(self.ui.pushButtonToggle, QtCore.SIGNAL('clicked()'), self.play_toggle)
         self.connect(self.ui.pushButtonCover, QtCore.SIGNAL('clicked()'), self.on_click_cover)
         self.connect(self.ui.pushButtonShare, QtCore.SIGNAL('clicked()'), self.on_click_share)
+        self.connect(self, QtCore.SIGNAL('cover_image_ready()'), self.__set_cover)
         l.info('DoubanFM init')
         self.next_song()
 
     def setup_player_ui(self):
         # Setup phonon player
         self.mediaObject = Phonon.MediaObject(self)
-        self.mediaObject.setTickInterval(100)
+        self.mediaObject.setTickInterval(500)
         self.mediaObject.tick.connect(self.tick)
         #self.mediaObject.finished.connect(self.finished)
         self.mediaObject.stateChanged.connect(self.catchStateChanged)
@@ -135,17 +136,27 @@ class DoubanFMGUI(QtGui.QMainWindow):
 
         self.mediaObject.setCurrentSource(Phonon.MediaSource(song.get('url')))
         self.mediaObject.play()
-        local_cover_path = os.path.join(tmp_dir, 'cover-%s.jpg' % song.get('sid'))
-        urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'), local_cover_path)
-        pixmap = QPixmap(local_cover_path)
+        self.__down_cover()
+
+        from share import now_playing
+        now_playing(song,channel_id=self.doubanfm.channel_id,channel_name=self.doubanfm.channel_name)
+    
+    @async
+    def __down_cover(self):
+        song = self.doubanfm.current_song
+        self._local_cover_path = os.path.join(tmp_dir, 'cover-%s.jpg' % song.get('sid'))
+        urllib.urlretrieve(song.get('picture').replace('mpic', 'lpic'), self._local_cover_path)
+        self.emit(QtCore.SIGNAL('cover_image_ready()'))
+
+    def __set_cover(self):
+        pixmap = QPixmap(self._local_cover_path)
         pixmap = pixmap.scaled(self.ui.pushButtonCover.iconSize(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         pixmap_size = self.ui.pushButtonCover.iconSize()
         pixmap = pixmap.copy(0,0,pixmap_size.width(), pixmap_size.height())
         cover = QIcon(pixmap)
         self.ui.pushButtonCover.setIcon(cover)
-        from share import now_playing
-        now_playing(song,channel_id=self.doubanfm.channel_id,channel_name=self.doubanfm.channel_name)
-        
+
+
     def play_toggle(self):
         song = self.doubanfm.current_song
         ns = self.mediaObject.state()
@@ -220,7 +231,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def click_trap(self, reason):
         # XXX bug on ubuntu  @menuz : left click action is not recognized
         # http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/qsystemtrayicon.html#ActivationReason-enum
-        print 'reason:', reason
+        l.debug('icon activated reason: %s' % reason)
         if reason == QtGui.QSystemTrayIcon.Trigger: #left click!
             self.leftMenu.exec_(QtGui.QCursor.pos())
 

@@ -2,6 +2,7 @@
 import os
 import logging
 import tempfile
+import threading
 
 
 def get_logger():
@@ -25,6 +26,14 @@ def ms_to_hms(time_ms):
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
     return h, m, s
+
+def async(func):
+    def _(*args, **kwargs):
+        th = threading.Thread(target=func, args=args, kwargs=kwargs)
+        th.daemon = True
+        th.start()
+    return _
+
 
 index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')

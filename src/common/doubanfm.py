@@ -15,7 +15,7 @@ import re
 from plugin import test_filter
 import BeautifulSoup
 
-from common import logger as l
+from common import logger as l, async
 
 class DoubanFM(object):
 
@@ -90,13 +90,14 @@ class DoubanFM(object):
         if len(self.current_playlist) > 0:
             song = self.current_playlist[self.current_cur]
             #TODO support more property here
-            song_url = u'http://{douban_fm_host}/?start={sid}g{ssid}g{channel}&cid={channel}'.format( \
-                    douban_fm_host = self.douban_fm_host
-                    , sid = song.get('sid')
-                    , ssid = song.get('ssid', 'None')
-                    , channel=self.channel_id
-                    , )
-            song.update({'song_url': song_url})
+            if not song.get('song_url'):
+                song_url = u'http://{douban_fm_host}/?start={sid}g{ssid}g{channel}&cid={channel}'.format( \
+                        douban_fm_host = self.douban_fm_host
+                        , sid = song.get('sid')
+                        , ssid = song.get('ssid', 'None')
+                        , channel=self.channel_id
+                        , )
+                song.update({'song_url': song_url})
             return song
         else:
             l.error('Ops...playlist is empty! exit')
@@ -153,6 +154,8 @@ class DoubanFM(object):
         self.current_playlist = self._get_playlist(params={'type':'b','sid': self.current_song.get('sid')})
         self.current_cur = -1
 
+
+    @async
     def heart_song(self):
         """红心"""
         current_song = self.current_song
@@ -160,6 +163,7 @@ class DoubanFM(object):
             self.current_playlist.extend(self._get_playlist(params={'type':'r','sid': current_song.get('sid')}))
             self.current_song['like'] = 1
 
+    @async
     def unheart_song(self):
         """红心"""
         current_song = self.current_song
