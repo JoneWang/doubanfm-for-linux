@@ -1,2 +1,2 @@
-requests >= 1.2.0
+requests >=0.14.0 
 BeautifulSoup >= 3.2.1

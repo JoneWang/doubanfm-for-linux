@@ -14,14 +14,12 @@
 System Packages:
 
 - qt4 ([extra/qt4](https://www.archlinux.org/packages/extra/x86_64/qt4/) for ArchLinux)
+- phonon ([extra/phonon](https://www.archlinux.org/packages/extra/x86_64/phonon/) for ArchLinux, also see [the wiki](https://wiki.archlinux.org/index.php/KDE#Which_backend_should_I_choose.3F))
 - pyqt ([extra/python2-pyqt](https://www.archlinux.org/packages/extra/x86_64/python2-pyqt/) for ArchLinux)
-- atleast one [phonon-backend](http://zh.wikipedia.org/wiki/Phonon_(KDE)) (`aur/phonon-mplayer-git` 
-or `extra/phonon-gstreamer` or `extra/phonon-vlc` for ArchLinux, 
-also see [the wiki](https://wiki.archlinux.org/index.php/KDE#Which_backend_should_I_choose.3F))
 
 Python Modules(also see `requirements.txt`):
 
-- requests >= 1.2.0
+- requests >= 0.14.0
 - BeautifulSoup >= 3.2.1
 
 Python Modules(Optional):
