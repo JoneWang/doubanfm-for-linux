@@ -217,7 +217,9 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
 
         self.rightMenu = QtGui.QMenu(parent)
         username = self.main_window.doubanfm.username
-        self.rightMenu.addAction("Douban FM for Linux")
+        icon = self.rightMenu.addAction("Douban FM for Linux")
+        self.connect(icon,QtCore.SIGNAL('triggered()'),self.toggle_main_window)
+
         self.rightMenu.addAction(u'@{0}'.format((username or u'anonymous')))
         app_exit = self.rightMenu.addAction("Exit")
         self.connect(app_exit,QtCore.SIGNAL('triggered()'),self.app_exit)
@@ -226,30 +228,26 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
         self.activated.connect(self.click_trap)
 
     def click_trap(self, reason):
-        # http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/qsystemtrayicon.html#ActivationReason-enum
-        if reason == QtGui.QSystemTrayIcon.Trigger: #left click!
+        #  http://t.cn/zTQz8cV 
+        # trigger is not supported in unity
+        if reason == QtGui.QSystemTrayIcon.Trigger: 
+            self.toggle_main_window()
+
+    def toggle_main_window(self):
             if self.main_window.isHidden():
                 x = QtGui.QCursor.pos().x()
                 y = QtGui.QCursor.pos().y()
                 h = self.main_window.minimumHeight()
                 w = self.main_window.minimumWidth()
-                alpha = 5
                 if x + w > self.screen_size[0]:
-                    x -= (w - alpha)
-                else:
-                    x += alpha
+                    x -= w
                 if y + h > self.screen_size[1]:
-                    y -= (h - alpha)
-                else:
-                    y -= alpha
+                    y -= h
                 self.main_window.setGeometry(x,y,w,h)
                 self.main_window.show()
                 self.main_window.setFocus()
             else:
                 self.main_window.hide()
-        else:
-            self.main_window.hide()
-
 
     def app_exit(self):
         shutil.rmtree(tmp_dir)
