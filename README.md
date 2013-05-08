@@ -1,4 +1,4 @@
-# Douban FM GUI
+# Douban FM For Linux
 
 ## 演示
 
