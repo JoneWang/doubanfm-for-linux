@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="/player">
+    <file>share.png</file>
+    <file>skip.png</file>
+    <file>pause.png</file>
+    <file>play.png</file>
+    <file>heart.png</file>
+    <file>hearted.png</file>
+    <file>trash.png</file>
+    <file>volume1.png</file>
+    <file>volume2.png</file>
+    <file>volume3.png</file>
+  </qresource>
+</RCC>

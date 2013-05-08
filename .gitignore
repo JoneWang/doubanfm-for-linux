@@ -25,3 +25,16 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# Cookie
+.cookie
+
+# Vim
+*.swp
+
+# virtualenv
+env
+
+# misc
+src/ui/resources/*.zip
+src/douban_fm.log

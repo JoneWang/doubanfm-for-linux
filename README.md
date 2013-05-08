@@ -1,82 +1,56 @@
-=====================
-Douban FM
-=====================
+# Douban FM GUI
 
-# System environments
---
+## 演示
 
-* System: ubuntu 12.04 LTS (used notify-osd)
+界面高仿Web版Douban FM
 
-* Software: OpenJDK Java 6 Runtime (decoder)
+![preview](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/preview.png)
 
 
-# Began to enjoy music
---
+## 依赖
 
-    $ chmod +x doubanfm
+这个APP主要使用Python语言开发，PyQt4用于GUI，Qt自带的Phonon用于播放。
 
-    # run
-    $ ./doubanfm
+System Packages:
 
-    # or ./doubanfm [cmd] [channel_id]
-    $ ./doubanfm c 1001400
+- qt4 ([extra/qt4](https://www.archlinux.org/packages/extra/x86_64/qt4/) for ArchLinux)
+- phonon ([extra/phonon](https://www.archlinux.org/packages/extra/x86_64/phonon/) for ArchLinux, also see [the wiki](https://wiki.archlinux.org/index.php/KDE#Which_backend_should_I_choose.3F))
+- pyqt ([extra/python2-pyqt](https://www.archlinux.org/packages/extra/x86_64/python2-pyqt/) for ArchLinux)
 
-# Command
---
+Python Modules(also see `requirements.txt`):
 
-c : select channel id
+- requests >= 0.14.0
+- BeautifulSoup >= 3.2.1
 
-# Display
---
-    -------------------------------------------------------
-    | Channel                    ID          Music Count  |
-    -------------------------------------------------------
-    | FM1 MHz                   [1]            9161       |
-    | FM2 MHz                   [2]            9676       |
-    | FM MHz                    [4]            6056       |
-    | FM MHz                    [6]            8932       |
-    | FM MHz                    [32]           3460       |
-    | FM MHz                    [9]            7176       |
-    | FM MHz                    [94]           210        |
-    | FM MHz                    [1000382]      172        |
-    | FM MHz                    [1000457]      294        |
-    | FM MHz                    [1001913]      247        |
-    | Hear Me MHz               [1002421]      614        |
-    | FM MHz                    [1002614]      162        |
-    | FM MHz                    [1002500]      840        |
-    | FM MHz                    [1000742]      333        |
-    | FM MHz                    [1000442]      393        |
-    | Voiceress MHz             [1000957]      402        |
-    | FM MHz                    [1000675]      793        |
-    | FM MHz                    [1000947]      97         |
-    | Billboard Hot100 MHz      [1000559]      170        |
-    | FM MHz                    [1000769]      200        |
-    -------------------------------------------------------
-    | Current Page: 1                                     |
-    -------------------------------------------------------
-    Enter ID select channel.
-    Enter "n" turn to next page or "p" turn to previous page.
-    Command:<<(input command)
-    
-    Music Info
-    ===============
-    Name: Among Stages
-    Album: Soulboy
-    Artist 方大同
-    Company Warner Music Hong Kong
-    ===============
+Python Modules(Optional):
 
-    http://mr3.douban.com/201212251520/ccf37bf2fadc1cdb055907d8a31451c5/view/song/small/p1437627.mp3
+- Skype4Py
+- pynotify
 
-    PLAY>> p1437627.mp3
-         buffered:  93.75%, 467.58KB/s  
-       vbr header: Xing
-     track frames: 8916
-      track bytes: 1718184
-          quality: 57
-          encoder: LAME3.98r
-          lowpass: 11000Hz
-         revision: 0
-         surround: preset 64
-    MPEG-2, Layer 3, 24000Hz, ABR 64K, Joint Stereo(M/S), 03:34
-    #1000  [====>------------------------------------] 00:24.00
+## 如何使用
+
+    ## 建议先软链接到某一PATH目录
+    $ sudo ln -sf `pwd`/bin/doubanfm /usr/local/bin/doubanfm
+
+    ## 然后就可以这样了：
+    $ doubanfm http://dou.bz/143WMS
+    $ doubanfm http://t.cn/aNs4Tx
+    $ doubanfm http://douban.fm/?start=181910g2440g0&cid=0
+    $ doubanfm http://douban.fm/?context=channel:0|musician_id:103766
+
+### 登录
+
+目前登录的方式非常简陋，你需要将douban.fm的cookie填入`src/.cookie`文件中。
+**注意**：由于豆瓣FM cookie安全限制，`document.cookie`并不能得到完整的Cookie，
+请抓包或者使用Chrome打开 http://douban.fm ，打开控制台 - Network - Headers - Request
+Headers，人工复制粘贴，确保Cookie中包含了`dbcl2`。
+Example:
+
+    $ cat .cookie 
+    bid="ggggggggggg"; ck="Mklm"; dbcl2="1000103:A01024n8964"; flag="ok"; openExpPan=Y; show_pro_init_tip=N
+
+登录之后tray icon上右键你会发现你的id，否则会提示未登录。
+
+
+![登录后是这样的](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/login.png)
+
