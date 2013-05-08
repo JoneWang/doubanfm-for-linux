@@ -1,5 +1,3 @@
-#!/bin/bash
-
-SCRIPT=`realpath $0`
-SCRIPTPATH=`dirname $SCRIPT`
-python $SCRIPTPATH/../src/main.py "$1" "$2"
+#!/bin/sh
+script_dir=`readlink -f $0 | xargs dirname`
+python $script_dir/../src/main.py "$1" "$2"
