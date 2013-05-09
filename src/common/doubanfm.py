@@ -69,14 +69,18 @@ class DoubanFM(object):
         cid = url_params.get('cid')
         if start:
             start = start[0]
-            self.douban_fm_default_params['channel'] = start.split('g')[-1]
-        if cid:
-            cid = cid[0]
-            self.douban_fm_default_params['channel'] = int(cid)
+            self.douban_fm_default_params['channel'] = int(start.split('g')[-1])
         if context is not None:
             context = context[0]
             self.douban_fm_default_params['context'] = context
-
+            ctx_dict = dict(map(lambda kv: tuple(kv.split(':')), 
+                    context.split('|')))
+            cid_ = ctx_dict.get('channel')
+            if cid_ is not None:
+                self.douban_fm_default_params['channel'] = int(cid_)
+        if cid:
+            cid = cid[0]
+            self.douban_fm_default_params['channel'] = int(cid)
         self.channel_id = int(self.douban_fm_default_params['channel'])
 
         self.current_playlist = []
@@ -125,6 +129,7 @@ class DoubanFM(object):
         params_tmp.update(params)
         params_data = urllib.urlencode(params_tmp)
         url = '?'.join(('http://%s%s' % (self.douban_fm_host, self.douban_fm_playlist_path), params_data))
+        l.debug('load playlist: %s' % url)
         res = self.http_session.get(url)
         if 'start="deleted"' in (res.headers.get('set-cookie') or ''):
             self.http_session.cookies.pop('start')
