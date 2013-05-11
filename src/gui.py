@@ -218,7 +218,9 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
 
         self.rightMenu = QtGui.QMenu(parent)
         username = self.main_window.doubanfm.username
+        channel_name = self.main_window.doubanfm.channel_name
         icon = self.rightMenu.addAction("Douban FM for Linux")
+        channel = self.rightMenu.addAction('%s MHz' % channel_name)
         self.connect(icon,QtCore.SIGNAL('triggered()'),self.toggle_main_window)
 
         self.rightMenu.addAction(u'@{0}'.format((username or u'anonymous')))
