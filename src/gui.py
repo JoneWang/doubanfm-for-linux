@@ -235,20 +235,20 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
             self.toggle_main_window()
 
     def toggle_main_window(self):
-            if self.main_window.isHidden():
-                x = QtGui.QCursor.pos().x()
-                y = QtGui.QCursor.pos().y()
-                h = self.main_window.minimumHeight()
-                w = self.main_window.minimumWidth()
-                if x + w > self.screen_size[0]:
-                    x -= w
-                if y + h > self.screen_size[1]:
-                    y -= h
-                self.main_window.setGeometry(x,y,w,h)
-                self.main_window.show()
-                self.main_window.setFocus()
-            else:
-                self.main_window.hide()
+        if self.main_window.isHidden():
+            x = QtGui.QCursor.pos().x()
+            y = QtGui.QCursor.pos().y()
+            h = self.main_window.minimumHeight()
+            w = self.main_window.minimumWidth()
+            if x + w > self.screen_size[0]:
+                x -= w
+            if y + h > self.screen_size[1]:
+                y -= h
+            self.main_window.setGeometry(x,y,w,h)
+            self.main_window.show()
+            self.main_window.setFocus()
+        else:
+            self.main_window.hide()
 
     def app_exit(self):
         shutil.rmtree(tmp_dir)

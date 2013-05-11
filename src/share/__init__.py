@@ -32,7 +32,7 @@ except:
 
 
 def now_playing(song, channel_id, channel_name):
-    t = u'♫ #NowPlaying# {artist} - {title} #{channel_name}# {song_url}'.format(\
+    t = u'♫ #NowPlaying# {artist} - {title} #{channel_name} MHz# {song_url}'.format(\
             channel_name = channel_name
             , **song
             )
