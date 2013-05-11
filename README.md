@@ -4,7 +4,13 @@
 
 界面高仿Web版Douban FM
 
-![preview](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/preview.png)
+XMonad
+
+![x XMonad](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/preview.png)
+
+Ubuntu
+
+![x Ubuntu](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/preview_ubuntu.png)
 
 
 ## 依赖
