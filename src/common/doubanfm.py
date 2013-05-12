@@ -50,19 +50,19 @@ class DoubanFM(object):
                 }
         
         self.http_session = requests.session()
-        self.http_session.cookies.update(http_cookies)
         pre_request_url = start_url or ('http://%s/' % self.douban_fm_host)
+        # XXX fix cross-domain cookie issue in a better way
+        while urlparse.urlparse(pre_request_url).netloc != 'douban.fm':
+            res = self.http_session.head(pre_request_url)
+            pre_request_url = res.headers.get('location')
+
+        self.http_session.cookies.update(http_cookies)
         res = self.http_session.get(pre_request_url)
         try:
             soup = BeautifulSoup.BeautifulSoup(res.text)
             self.username = soup.find(id='user_name').text
         except:
             self.username = None
-        if len(res.history) >= 1:
-            last_visit = res.history[-1]
-            if last_visit.status_code == 302:
-                pre_request_url = last_visit.headers.get('location')
-
         url_params =  urlparse.parse_qs(urlparse.urlparse(pre_request_url).query)
         start = url_params.get('start')
         context = url_params.get('context')
