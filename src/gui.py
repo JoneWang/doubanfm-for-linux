@@ -87,11 +87,11 @@ class DoubanFMGUI(QtGui.QMainWindow):
     def on_click_cover(self):
         song = self.doubanfm.current_song
         subject_url = u'http://music.douban.com{album}'.format(**song)
-        webbrowser.open_new_tab(subject_url)
+        self.open_url(subject_url)
 
     def on_click_share(self):
         song = self.doubanfm.current_song
-        webbrowser.open_new_tab(song.get('song_url'))
+        self.open_url(song.get('song_url'))
         
     def tick(self, time):
         if self.total_time is None:
@@ -150,6 +150,10 @@ class DoubanFMGUI(QtGui.QMainWindow):
         from share import now_playing
         now_playing(song,channel_id=self.doubanfm.channel_id,channel_name=self.doubanfm.channel_name)
     
+    @async
+    def open_url(self, url):
+        webbrowser.open_new_tab(url)
+
     @async
     def __down_cover(self):
         song = self.doubanfm.current_song
