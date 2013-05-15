@@ -242,15 +242,16 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
 
     def toggle_main_window(self):
         if self.main_window.isHidden():
-            x = QtGui.QCursor.pos().x()
-            y = QtGui.QCursor.pos().y()
-            h = self.main_window.minimumHeight()
-            w = self.main_window.minimumWidth()
-            if x + w > self.screen_size[0]:
-                x -= w
-            if y + h > self.screen_size[1]:
-                y -= h
-            self.main_window.setGeometry(x,y,w,h)
+            mouse_x = QtGui.QCursor.pos().x()
+            mouse_y = QtGui.QCursor.pos().y()
+            window_h = self.main_window.minimumHeight()
+            window_w = self.main_window.minimumWidth()
+            if mouse_x + window_w > self.screen_size[0]:
+                mouse_x -= window_w
+            if mouse_y + window_h > self.screen_size[1]:
+                mouse_y -= window_h
+            # Show window,and put window on the top of screen.
+            self.main_window.setGeometry(mouse_x,0,window_w,window_h)
             self.main_window.show()
             self.main_window.setFocus()
         else:
