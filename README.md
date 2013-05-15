@@ -4,7 +4,13 @@
 
 界面高仿Web版Douban FM
 
-![preview](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/preview.png)
+XMonad
+
+![x XMonad](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/master/misc/preview.png)
+
+Ubuntu
+
+![x Ubuntu](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/master/misc/preview_ubuntu.png)
 
 
 ## 依赖
@@ -52,5 +58,5 @@ Example:
 登录之后tray icon上右键你会发现你的id，否则会提示未登录。
 
 
-![登录后是这样的](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/gui/misc/login.png)
+![登录后是这样的](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/master/misc/login.png)
 

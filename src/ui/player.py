@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/player.ui'
 #
-# Created: Tue May  7 07:57:22 2013
+# Created: Wed May  8 13:44:17 2013
 #      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,6 +27,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(510, 245)
+        MainWindow.setMinimumSize(QtCore.QSize(510, 245))
+        MainWindow.setMaximumSize(QtCore.QSize(510, 245))
         MainWindow.setAutoFillBackground(False)
         MainWindow.setStyleSheet(_fromUtf8("background-color: rgba(255,255,255);"))
         self.centralwidget = QtGui.QWidget(MainWindow)

@@ -50,33 +50,37 @@ class DoubanFM(object):
                 }
         
         self.http_session = requests.session()
-        self.http_session.cookies.update(http_cookies)
         pre_request_url = start_url or ('http://%s/' % self.douban_fm_host)
+        # XXX fix cross-domain cookie issue in a better way
+        while urlparse.urlparse(pre_request_url).netloc != 'douban.fm':
+            res = self.http_session.head(pre_request_url)
+            pre_request_url = res.headers.get('location')
+
+        self.http_session.cookies.update(http_cookies)
         res = self.http_session.get(pre_request_url)
         try:
             soup = BeautifulSoup.BeautifulSoup(res.text)
             self.username = soup.find(id='user_name').text
         except:
             self.username = None
-        if len(res.history) >= 1:
-            last_visit = res.history[-1]
-            if last_visit.status_code == 302:
-                pre_request_url = last_visit.headers.get('location')
-
         url_params =  urlparse.parse_qs(urlparse.urlparse(pre_request_url).query)
         start = url_params.get('start')
         context = url_params.get('context')
         cid = url_params.get('cid')
         if start:
             start = start[0]
-            self.douban_fm_default_params['channel'] = start.split('g')[-1]
-        if cid:
-            cid = cid[0]
-            self.douban_fm_default_params['channel'] = int(cid)
+            self.douban_fm_default_params['channel'] = int(start.split('g')[-1])
         if context is not None:
             context = context[0]
             self.douban_fm_default_params['context'] = context
-
+            ctx_dict = dict(map(lambda kv: tuple(kv.split(':')), 
+                    context.split('|')))
+            cid_ = ctx_dict.get('channel')
+            if cid_ is not None:
+                self.douban_fm_default_params['channel'] = int(cid_)
+        if cid:
+            cid = cid[0]
+            self.douban_fm_default_params['channel'] = int(cid)
         self.channel_id = int(self.douban_fm_default_params['channel'])
 
         self.current_playlist = []
@@ -125,6 +129,7 @@ class DoubanFM(object):
         params_tmp.update(params)
         params_data = urllib.urlencode(params_tmp)
         url = '?'.join(('http://%s%s' % (self.douban_fm_host, self.douban_fm_playlist_path), params_data))
+        l.debug('load playlist: %s' % url)
         res = self.http_session.get(url)
         if 'start="deleted"' in (res.headers.get('set-cookie') or ''):
             self.http_session.cookies.pop('start')

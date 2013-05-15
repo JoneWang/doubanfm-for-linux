@@ -24,13 +24,14 @@ class GUIState:
     (Playing, Paused, Heart, Hearted) = range(4)
 
 class DoubanFMGUI(QtGui.QMainWindow):
-    def __init__(self, start_url=None, parent=None):
+    def __init__(self, parent=None, start_url=None):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow() 
         self.ui.setupUi(self)
-        self.setup_player_ui()
         self.ui.seekSlider.setIconVisible(False)
         self.ui.volumeSlider.setMuteVisible(False)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setup_player_ui()
         self.total_time = None
         self.doubanfm = DoubanFM(start_url, debug=False)
         self.connect(self.ui.pushButtonHeart, QtCore.SIGNAL('clicked()'), self.heart_song)
@@ -73,15 +74,24 @@ class DoubanFMGUI(QtGui.QMainWindow):
         elif state == GUIState.Hearted:
             self.ui.pushButtonHeart.setStyleSheet('border-image: url(:/player/hearted.png);\nborder: none;\noutline: none;')
 
+    def leaveEvent(self, e):
+        # the real lose focus event, WTF
+        # http://harmattan-dev.nokia.com/docs/library/html/qt4/qwidget.html#leaveEvent
+        self.hide()
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Escape:
+            self.hide()
+
+
     def on_click_cover(self):
         song = self.doubanfm.current_song
         subject_url = u'http://music.douban.com{album}'.format(**song)
-        webbrowser.open_new_tab(subject_url)
+        self.open_url(subject_url)
 
-        
     def on_click_share(self):
         song = self.doubanfm.current_song
-        webbrowser.open_new_tab(song.get('song_url'))
+        self.open_url(song.get('song_url'))
         
     def tick(self, time):
         if self.total_time is None:
@@ -100,7 +110,6 @@ class DoubanFMGUI(QtGui.QMainWindow):
     def _set_total_time(self, time):
         self.total_time = time
         
-
     def catchStateChanged(self, new_state, old_state):
         ''' 
         possible state sequences:
@@ -141,6 +150,10 @@ class DoubanFMGUI(QtGui.QMainWindow):
         from share import now_playing
         now_playing(song,channel_id=self.doubanfm.channel_id,channel_name=self.doubanfm.channel_name)
     
+    @async
+    def open_url(self, url):
+        webbrowser.open_new_tab(url)
+
     @async
     def __down_cover(self):
         song = self.doubanfm.current_song
@@ -196,53 +209,60 @@ class DoubanFMGUI(QtGui.QMainWindow):
         print 'DoubanFM safely exit'
         self.mediaObject.stop()
 
-class SystemTrayIcon(QtGui.QSystemTrayIcon):
-    def __init__(self, parent=None):
+class SystemTrayApp(QtGui.QSystemTrayIcon):
+    def __init__(self, parent, width, height):
         QtGui.QSystemTrayIcon.__init__(self, parent)
-
         self.setIcon(QtGui.QIcon(favicon))
-
+        self.screen_size = (width, height)
         start_url = None
         if len(sys.argv) >= 2:
             start_url = sys.argv[1]
-        self.doubanfm_gui = DoubanFMGUI(start_url)
 
-        self.leftMenu = QtGui.QMenu(parent)
-        lqa=QWidgetAction(self.leftMenu)
-        lqa.setDefaultWidget(self.doubanfm_gui)
-        action=self.leftMenu.addAction(lqa)
-
+        self.main_window = DoubanFMGUI(start_url=start_url)
 
         self.rightMenu = QtGui.QMenu(parent)
-        username = self.doubanfm_gui.doubanfm.username
-        rqa = QWidgetAction(self.rightMenu)
-        about = QLabel("{0} {1}".format('Douban FM GUI', '', 'by mckelvin'))
+        username = self.main_window.doubanfm.username
+        channel_name = self.main_window.doubanfm.channel_name
+        icon = self.rightMenu.addAction("Douban FM for Linux")
+        channel = self.rightMenu.addAction('%s MHz' % channel_name)
+        self.connect(icon,QtCore.SIGNAL('triggered()'),self.toggle_main_window)
 
-        rqa.setDefaultWidget(about);
-        self.rightMenu.addAction(rqa)
-        self.rightMenu.addAction(u'@{0}'.format((username or u'未登录')))
+        self.rightMenu.addAction(u'@{0}'.format((username or u'anonymous')))
         app_exit = self.rightMenu.addAction("Exit")
         self.connect(app_exit,QtCore.SIGNAL('triggered()'),self.app_exit)
 
-                
         self.setContextMenu(self.rightMenu)
         self.activated.connect(self.click_trap)
 
     def click_trap(self, reason):
-        # XXX bug on ubuntu  @menuz : left click action is not recognized
-        # http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/qsystemtrayicon.html#ActivationReason-enum
-        l.debug('icon activated reason: %s' % reason)
-        if reason == QtGui.QSystemTrayIcon.Trigger: #left click!
-            self.leftMenu.exec_(QtGui.QCursor.pos())
+        #  http://t.cn/zTQz8cV 
+        # trigger is not supported in unity
+        if reason == QtGui.QSystemTrayIcon.Trigger: 
+            self.toggle_main_window()
+
+    def toggle_main_window(self):
+        if self.main_window.isHidden():
+            x = QtGui.QCursor.pos().x()
+            y = QtGui.QCursor.pos().y()
+            h = self.main_window.minimumHeight()
+            w = self.main_window.minimumWidth()
+            if x + w > self.screen_size[0]:
+                x -= w
+            if y + h > self.screen_size[1]:
+                y -= h
+            self.main_window.setGeometry(x,y,w,h)
+            self.main_window.show()
+            self.main_window.setFocus()
+        else:
+            self.main_window.hide()
 
     def app_exit(self):
         shutil.rmtree(tmp_dir)
-        del self.doubanfm_gui
-        qApp.quit()
+        return qApp.quit()
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setApplicationName("Douban FM")
-    doubanfm = DoubanFMGUI()
-    doubanfm.show()
+    main_window = DoubanFMGUI()
+    main_window.show()
     sys.exit(app.exec_())
