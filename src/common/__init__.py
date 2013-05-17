@@ -34,6 +34,7 @@ def async(func):
         th.start()
     return _
 
+is_unity = ('Unity' == os.getenv('XDG_CURRENT_DESKTOP', 'empty').lower())
 
 index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')

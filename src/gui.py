@@ -17,7 +17,7 @@ from PyQt4.phonon import Phonon
 
 from ui.player import Ui_MainWindow, _fromUtf8
 from common import index_dir, tmp_dir, favicon, phonon_state_label, \
-        logger as l, ms_to_hms, async
+        logger as l, ms_to_hms, async, is_unity
 from common.doubanfm import DoubanFM
 
 class GUIState:
@@ -250,8 +250,10 @@ class SystemTrayApp(QtGui.QSystemTrayIcon):
                 mouse_x -= window_w
             if mouse_y + window_h > self.screen_size[1]:
                 mouse_y -= window_h
-            # Show window,and put window on the top of screen.
-            self.main_window.setGeometry(mouse_x,0,window_w,window_h)
+            # XXX naive fix of window position for unity
+            if is_unity:
+                mouse_y -= mouse_y
+            self.main_window.setGeometry(mouse_x, mouse_y, window_w, window_h)
             self.main_window.show()
             self.main_window.setFocus()
         else:
