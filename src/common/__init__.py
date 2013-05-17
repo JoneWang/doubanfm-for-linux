@@ -33,8 +33,8 @@ def async(func):
         th.daemon = True
         th.start()
     return _
-
-is_unity = ('Unity' == os.getenv('XDG_CURRENT_DESKTOP', 'empty').lower())
+# http://askubuntu.com/questions/70296/is-there-an-environment-variable-that-is-set-for-unity
+is_unity = ('Unity' == os.getenv('XDG_CURRENT_DESKTOP', 'empty'))
 
 index_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 favicon = os.path.join(index_dir, 'ui/resources/doubanfm-0.xpm')
