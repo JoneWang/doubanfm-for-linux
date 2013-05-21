@@ -74,6 +74,9 @@ class Player():
         self.player.set_property("video-sink", fakesink)
         bus = self.player.get_bus()
         bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect("message", self.on_message)
+        #bus.connect("sync-message::element", self.on_sync_message)
 
     def start(self, uri):
         self.player.set_state(gst.STATE_NULL)
@@ -88,6 +91,18 @@ class Player():
 
     def pause(self):
         self.player.set_state(gst.STATE_PAUSED)
+
+    def connect(self, event, func):
+        if event == 'play_end':
+            self.on_play_end = func
+
+    def on_play_end():
+        pass
+
+    def on_message(self, bus, message):
+        t = message.type
+        if t == gst.MESSAGE_EOS:
+            self.on_play_end()
     
 
 class EventUnrealizedException(Exception):
@@ -113,6 +128,10 @@ class TrayLayout(object):
              'id': 'menu_info', 'name': 'Music Info', 'event': self.event_info_music}, 
             {'icon': 'user.png', 
              'id': 'menu_login', 'name': 'Login', 'event': self.event_login},
+            {'icon': 'channel.png', 
+             'id': 'menu_login', 'name': 'Channel', 'event': self.event_login},
+            {'icon': 'about.png', 
+             'id': 'menu_login', 'name': 'About', 'event': self.event_login},
             {'icon': 'exit.png', 
              'id': 'menu_quit', 'name': 'Exit', 'event': gtk.main_quit}
         ]
@@ -120,11 +139,10 @@ class TrayLayout(object):
         self._init_tray_icon(menu)
 
     def _init_tray_icon(self, menu):
-        self.ind = appindicator.Indicator ('example-simple-client',
+        self.ind = appindicator.Indicator('example-simple-client',
                                       os.path.join(ROOT_PATH, 'icons', 'music.png'),
                                       appindicator.CATEGORY_APPLICATION_STATUS)
         self.ind.set_status(appindicator.STATUS_ACTIVE)
-        self.ind.set_attention_icon(os.path.join(ROOT_PATH, 'icons', 'music.png'))
         self.ind.set_menu(menu)
 
     def _init_menu(self, menus_data):
@@ -143,21 +161,27 @@ class TrayLayout(object):
             menu_item.show()
         return menu
 
+    def _set_tray_icon(self, icon):
+        self.ind.set_icon(os.path.join(ROOT_PATH, 'icons', icon))
+        self.ind.set_attention_icon(os.path.join(ROOT_PATH, 'icons', icon))
+
     def _set_menu_icon(self, menu, icon):
-            img = gtk.Image()
-            img.set_from_file(os.path.join(ROOT_PATH, 'icons', icon))
-            img.show()
-            menu.set_image(img)
+        img = gtk.Image()
+        img.set_from_file(os.path.join(ROOT_PATH, 'icons', icon))
+        img.show()
+        menu.set_image(img)
 
     def event_start_pause_music(self, argv):
         if self.menu_start_stop.get_label() == 'Continue' or not argv:
             self.continue_music(argv)
             self.menu_start_stop.set_label('Pause')
             self._set_menu_icon(self.menu_start_stop, 'pause.png')
+            self._set_tray_icon('music.png')
         else:
             self.pause_music(argv)
             self.menu_start_stop.set_label('Continue')
             self._set_menu_icon(self.menu_start_stop, 'play.png')
+            self._set_tray_icon('music_stop.png')
 
     def event_start_music(self, argv):
         pass
@@ -207,6 +231,7 @@ class TrayMenu(TrayLayout):
     def __init__(self):
         super(TrayMenu, self).__init__()
         self.player = Player()
+        self.player.connect('play_end', self.next_music)
         self.douban = DoubanAPI()
         self.new_list()
         self.start_music()
@@ -250,6 +275,7 @@ class LoginWdindow(gtk.Window):
         window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         window.set_title('Login')
         window.set_default_size(400, -1)
+        #window.connect('EXPOSE', self.expose)
         vbox = gtk.VBox()
         window.add(vbox)
 
@@ -262,13 +288,8 @@ class LoginWdindow(gtk.Window):
         self.entry_code = gtk.Entry()
         vbox.pack_start(self.entry_code, False, True)
 
-        ver_data = self.douban.get_verification_code()
-
-        loader = gtk.gdk.PixbufLoader()
-        loader.write(ver_data, len(ver_data))
-        pixbuf = loader.get_pixbuf()
         self.image_ver = gtk.Image()
-        self.image_ver.set_from_pixbuf(pixbuf)
+        #self.image_ver.set_from_pixbuf(pixbuf)
         self.image_ver.show()
         vbox.add(self.image_ver)
 
@@ -276,6 +297,13 @@ class LoginWdindow(gtk.Window):
         self.button.connect("clicked", self.login)
         vbox.add(self.button)
         window.show_all()
+
+    def expose(self, argv):
+        ver_data = self.douban.get_verification_code()
+        loader = gtk.gdk.PixbufLoader()
+        loader.write(ver_data, len(ver_data))
+        pixbuf = loader.get_pixbuf()
+        self.image_ver.set_from_pixbuf(pixbuf)
 
     def login(self, argv):
         self.douban.get_session(
