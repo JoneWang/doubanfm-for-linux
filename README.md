@@ -60,3 +60,6 @@ Example:
 
 ![登录后是这样的](https://github.com/mckelvin/doubanfm-cli-for-linux/raw/master/misc/login.png)
 
+### 进度
+
+最新0.4版正在开发中，如需，请拉取tray-dev分支。
