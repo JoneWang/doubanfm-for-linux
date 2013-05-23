@@ -230,6 +230,7 @@ class TrayMenu(TrayLayout):
 
     def __init__(self):
         super(TrayMenu, self).__init__()
+        self.is_pause = False
         self.player = Player()
         self.player.connect('play_end', self.next_music)
         self.douban = DoubanAPI()
@@ -242,8 +243,9 @@ class TrayMenu(TrayLayout):
 
     def start_music(self, argv=None):
         music_info = self.music_list[self.current]
-        if music_info==self.music_list[-1]:
+        if music_info==self.music_list[-1] or self.is_pause:
             self.new_list()
+            self.is_pause = False
         self.player.start(music_info['url'])
         self.set_tray_title(music_info['title'])
 
@@ -255,6 +257,7 @@ class TrayMenu(TrayLayout):
 
     def pause_music(self, argv=None):
         self.player.pause()
+        self.is_pause = True
 
     def next_music(self, argv=None):
         self.current += 1
