@@ -33,6 +33,7 @@ class DoubanAPI(object):
         self.verification_url = 'http://douban.fm/j/new_captcha'
         self.verification_image_url = 'http://douban.fm/misc/captcha'
         self.login_url = 'http://douban.fm/j/login'
+        self.douban_music_url = 'http://music.douban.com/'
 
     def get_music_list(self, channel_id):
         self.music_list_params['channel'] = str(channel_id)
@@ -57,7 +58,7 @@ class DoubanAPI(object):
             'captcha_id': self.code,
             'task': 'sync_channel_list',
         })
-        print resp.headers.get('Set-Cookie', '')
+        return resp.headers.get('Set-Cookie', '')
 
     def _request_url(self, url, params={}):
         params_data = urllib.urlencode(params)
@@ -129,14 +130,45 @@ class TrayLayout(object):
             {'icon': 'user.png', 
              'id': 'menu_login', 'name': 'Login', 'event': self.event_login},
             {'icon': 'channel.png', 
-             'id': 'menu_login', 'name': 'Channel', 'event': self.event_login},
+             'id': 'menu_channel', 'name': 'Channel', 'event': self.event_login},
             {'icon': 'about.png', 
-             'id': 'menu_login', 'name': 'About', 'event': self.event_login},
+             'id': 'menu_about', 'name': 'About', 'event': self.event_login},
             {'icon': 'exit.png', 
              'id': 'menu_quit', 'name': 'Exit', 'event': gtk.main_quit}
         ]
         menu = self._init_menu(menus_data)
         self._init_tray_icon(menu)
+
+    def connect(self, event, func):
+        if event == 'start_music':
+            self.on_start_music = func
+        if event == 'pause_music':
+            self.on_pause_music = func
+        if event == 'continue_music':
+            self.on_continue_music= func
+        if event == 'stop_music':
+            self.on_stop_music = func
+        if event == 'next_music':
+            self.on_next_music = func
+        if event == 'info_music':
+            self.on_info_music = func
+        if event == 'session':
+            self.on_session = func
+
+    def on_start_music(self):
+        pass
+    def on_pause_music(self):
+        pass
+    def on_continue_music(self):
+        pass
+    def on_stop_music(self):
+        pass
+    def on_next_music(self):
+        pass
+    def on_info_music(self):
+        pass
+    def on_session(self, session):
+        pass
 
     def _init_tray_icon(self, menu):
         self.ind = appindicator.Indicator('example-simple-client',
@@ -171,71 +203,75 @@ class TrayLayout(object):
         img.show()
         menu.set_image(img)
 
+    def _set_tray_title(self, title):
+        self.ind.set_label(title)
+
     def event_start_pause_music(self, argv):
         if self.menu_start_stop.get_label() == 'Continue' or not argv:
-            self.continue_music(argv)
+            self.on_continue_music()
             self.menu_start_stop.set_label('Pause')
             self._set_menu_icon(self.menu_start_stop, 'pause.png')
             self._set_tray_icon('music.png')
         else:
-            self.pause_music(argv)
+            self.on_pause_music()
             self.menu_start_stop.set_label('Continue')
             self._set_menu_icon(self.menu_start_stop, 'play.png')
             self._set_tray_icon('music_stop.png')
 
-    def event_start_music(self, argv):
-        pass
-
     def event_login(self, argv):
-        LoginWdindow()
+        login = LoginWdindow()
+        login.connect('session', self._set_user_name)
 
-    def set_tray_title(self, title):
-        self.ind.set_label(title)
+    def _set_user_name(self, session=None):
+        name = self.on_session(session)
+        if name:
+            self.menu_login.set_label(name)
+        else:
+            self.menu_login.set_label('Login')
 
     def event_next_music(self, argv):
-        self.next_music(argv)
         self.menu_start_stop.set_label('Pause')
+        title = self.on_next_music()
+        self._set_tray_title(title)
 
     def event_like_music(self, argv):
         pass
 
     def event_info_music(self, argv):
-        uri = self.info_music()
+        uri = self.on_info_music()
         webbrowser.open(uri)
 
-    def start_music(self, argv):
-        raise EventUnrealizedException('start_music')
+    def event_user_name(self, argv):
+        #uri = self.user_session()
+        self.login.set_label('')
 
-    def pause_music(self, argv):
-        raise EventUnrealizedException('start_music')
-
-    def continue_music(self, argv):
-        raise EventUnrealizedException('continue_music')
-
-    def stop_music(self, argv):
-        #raise EventUnrealizedException('stop_music')
-        pass
-
-    def next_music(self, argv):
-        raise EventUnrealizedException('next_music')
-
-    def info_music(self, argv):
-        raise EventUnrealizedException('info_music')
+    def show(self):
+        title = self.on_start_music()
+        self._set_tray_title(title)
+        self._set_user_name()
 
 
 
 session = None
 
-class TrayMenu(TrayLayout):
+class TrayMenu(object):
 
     def __init__(self):
-        super(TrayMenu, self).__init__()
+        #super(TrayMenu, self).__init__()
+        tray = TrayLayout()
+        tray.connect('start_music', self.start_music)
+        tray.connect('pause_music', self.pause_music)
+        tray.connect('continue_music', self.continue_music)
+        tray.connect('stop_music', self.stop_music)
+        tray.connect('next_music', self.next_music)
+        tray.connect('info_music', self.info_music)
+        tray.connect('session', self.get_session)
         self.is_pause = False
         self.player = Player()
         self.player.connect('play_end', self.next_music)
         self.douban = DoubanAPI()
         self.new_list()
-        self.start_music()
+        tray.show()
 
     def new_list(self):
         self.current = 0
@@ -247,7 +283,7 @@ class TrayMenu(TrayLayout):
             self.new_list()
             self.is_pause = False
         self.player.start(music_info['url'])
-        self.set_tray_title(music_info['title'])
+        return music_info['title']
 
     def continue_music(self, argv=None):
         self.player.conti()
@@ -261,26 +297,41 @@ class TrayMenu(TrayLayout):
 
     def next_music(self, argv=None):
         self.current += 1
-        self.start_music()
+        return self.start_music()
 
     def info_music(self, argv=None):
-        return 'http://music.douban.com/%s' % self.music_list[self.current]['album']
+        return self.douban.douban_music_url + self.music_list[self.current]['album']
 
-    def show_login(self, argv=None):
-        LoginWdindow()
+    def get_session(self, session=None):
+        cookie_path = os.path.join(ROOT_PATH, '.user_cookie')
+        if os.path.isfile(cookie_path):
+            if session:
+                f = open(cookie_path, 'w')
+                f.write(session)
+            else:
+                f = open(cookie_path, 'r')
+                session = f.read()
+            f.close()
+        else:
+            return None
+        if session:
+            exec(session.split('; ')[0])
+            return ue
+        else:
+            return None
 
 
 class LoginWdindow(gtk.Window):
     
     def __init__(self):
+        super(LoginWdindow, self).__init__(gtk.WINDOW_TOPLEVEL)
+        
         self.douban = DoubanAPI()
 
-        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        window.set_title('Login')
-        window.set_default_size(400, -1)
-        #window.connect('EXPOSE', self.expose)
+        self.set_title('Login')
+        self.set_default_size(400, -1)
         vbox = gtk.VBox()
-        window.add(vbox)
+        self.add(vbox)
 
         self.entry_email = gtk.Entry()
         vbox.pack_start(self.entry_email, False, True)
@@ -291,15 +342,27 @@ class LoginWdindow(gtk.Window):
         self.entry_code = gtk.Entry()
         vbox.pack_start(self.entry_code, False, True)
 
+        ver_data = self.douban.get_verification_code()
+        loader = gtk.gdk.PixbufLoader()
+        loader.write(ver_data, len(ver_data))
+        pixbuf = loader.get_pixbuf()
+
         self.image_ver = gtk.Image()
-        #self.image_ver.set_from_pixbuf(pixbuf)
+        self.image_ver.set_from_pixbuf(pixbuf)
         self.image_ver.show()
         vbox.add(self.image_ver)
 
         self.button = gtk.Button('Login')
         self.button.connect("clicked", self.login)
         vbox.add(self.button)
-        window.show_all()
+        self.show_all()
+
+    def connect(self, event, func):
+        if event == 'session':
+            self.on_session = func
+
+    def on_session(self, session):
+        pass
 
     def expose(self, argv):
         ver_data = self.douban.get_verification_code()
@@ -309,11 +372,14 @@ class LoginWdindow(gtk.Window):
         self.image_ver.set_from_pixbuf(pixbuf)
 
     def login(self, argv):
-        self.douban.get_session(
-                self.entry_email.get_text(), 
-                self.entry_password.get_text(), 
-                self.entry_code.get_text()
-            )
+        email = self.entry_email.get_text().strip()
+        password = self.entry_password.get_text().strip()
+        code = self.entry_code.get_text().strip()
+        session = self.douban.get_session(email, password, code)
+        self.on_session(session)
+        self.hide_all()
+        
+
         
 if __name__ == '__main__':
     TrayMenu()
