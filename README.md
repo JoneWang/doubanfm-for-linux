@@ -31,7 +31,7 @@ Python Modules(also see `requirements.txt`):
 Python Modules(Optional):
 
 - Skype4Py
-- pynotify
+- pyinotify
 
 ## 如何使用
 
